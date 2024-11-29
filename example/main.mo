@@ -1,5 +1,6 @@
 // Base library imports
 import Buffer "mo:base/Buffer";
+import Array "mo:base/Array";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
@@ -13,6 +14,7 @@ import { nhash } "mo:map/Map";
 import Vec "mo:vector";
 
 // Certified data for ICRC-3
+import Array "mo:base/Array";
 import CertifiedData "mo:base/CertifiedData";
 import CertTree "mo:cert/CertTree";
 
@@ -97,6 +99,7 @@ shared(_init_msg) actor class Example(_args : {
     description: Text;
     thumbnail: Text;
     owner: Account;
+    user_id: UserId;
     nft_ids: [Nat];
   };
 
@@ -121,7 +124,18 @@ shared(_init_msg) actor class Example(_args : {
   public shared(msg) func create_library(library: Library): async LibraryId {
     // Only the admin can create a library
     if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+    let user: ?User = Map.get(users, n32hash, library.user_id);
+    // User ID must be existent
+    if (user == null) D.trap("UserNonExistent");
+
+    
+    // 1) Create library
     Map.set(libraries, n32hash, library.library_id , library);
+
+    // 2) Update user profile
+    let newArray = Array.init<LibraryId>(1, library.library_id);
+    Array.append<LibraryId>(user.library_ids, newArray);
+
     return library.library_id;
   };
 
