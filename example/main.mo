@@ -1,23 +1,29 @@
+// Base library imports
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
-import Vec "mo:vector";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
 import D "mo:base/Debug";
-import CertifiedData "mo:base/CertifiedData";
 
+import Vec "mo:vector";
+
+// Certified data for ICRC-3
+import CertifiedData "mo:base/CertifiedData";
 import CertTree "mo:cert/CertTree";
 
+// Standards
 import ICRC7 "mo:icrc7-mo";
 import ICRC37 "mo:icrc37-mo";
 import ICRC3 "mo:icrc3-mo";
 
+// Default init args
 import ICRC7Default "./initial_state/icrc7";
 import ICRC37Default "./initial_state/icrc37";
 import ICRC3Default "./initial_state/icrc3";
 
 
+// _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Example(_args : {
   icrc7_args: ?ICRC7.InitArgs;
   icrc37_args: ?ICRC37.InitArgs;
@@ -57,6 +63,7 @@ shared(_init_msg) actor class Example(_args : {
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
+  // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
     #v0_1_0(#id), 
@@ -94,6 +101,7 @@ shared(_init_msg) actor class Example(_args : {
   private var _icrc37 : ?ICRC37.ICRC37 = null;
   private var _icrc3 : ?ICRC3.ICRC3 = null;
 
+  // Obtaining the current state
   private func get_icrc7_state() : ICRC7.CurrentState {
     return icrc7_state_current;
   };
@@ -102,11 +110,14 @@ shared(_init_msg) actor class Example(_args : {
     return icrc37_state_current;
   };
 
+  // Unused - Why?
   private func get_icrc3_state() : ICRC3.CurrentState {
     return icrc3_state_current;
   };
-  
 
+  // About certification - ICRC-3
+
+  // CertTree is from another package
   stable let cert_store : CertTree.Store = CertTree.newStore();
   let ct = CertTree.Ops(cert_store);
 
@@ -121,13 +132,6 @@ shared(_init_msg) actor class Example(_args : {
     ct.setCertifiedData();
     D.print("did the certification " # debug_show(CertifiedData.getCertificate()));
     return true;
-  };
-
-  private func get_icrc3_environment() : ICRC3.Environment{
-    ?{
-      updated_certification = ?updated_certification;
-      get_certificate_store = ?get_certificate_store;
-    };
   };
 
   D.print("Initargs: " # debug_show(_args));
@@ -153,6 +157,14 @@ shared(_init_msg) actor class Example(_args : {
     };
 
     icrc3Class.update_supported_blocks(Buffer.toArray(supportedBlocks));
+  };
+
+  // Initializing instances of the standards
+  private func get_icrc3_environment() : ICRC3.Environment{
+    ?{
+      updated_certification = ?updated_certification;
+      get_certificate_store = ?get_certificate_store;
+    };
   };
 
   func icrc3() : ICRC3.ICRC3 {
@@ -219,6 +231,7 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
+  // Helper functions for environment
   private var canister_principal : ?Principal = null;
 
   private func get_canister() : Principal {
@@ -245,6 +258,8 @@ shared(_init_msg) actor class Example(_args : {
       }; */
     Time.now();
   };
+
+//----------------------------ICRC-7 public functions---------------------------------------------------
 
   public query func icrc7_symbol() : async Text {
     return switch(icrc7().get_ledger_info().symbol){
@@ -333,7 +348,6 @@ shared(_init_msg) actor class Example(_args : {
     return Vec.toArray(results);
   };
 
-
   public query func icrc7_token_metadata(token_ids: [Nat]) : async [?[(Text, Value)]]{
      return icrc7().token_metadata(token_ids);
   };
@@ -358,6 +372,7 @@ shared(_init_msg) actor class Example(_args : {
     return icrc7().get_tokens_of_paginated(account, prev, take);
   };
 
+//--------------------------- ICRC-37 public Functions-------------------------------------------------------
   public query func icrc37_is_approved(args: [IsApprovedArg]) : async [Bool] {
     return icrc37().is_approved(args);
   };
@@ -441,7 +456,9 @@ shared(_init_msg) actor class Example(_args : {
 
   public shared(msg) func icrcX_mint(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
 
-    //for now we require an owner to mint.
+    // Official function provided by ICRC-7 to mint an NFT
+    // Must be careful as calling set_nfts on existing token will replace it with new metadata
+    // Only the deployer can call this function
     switch(icrc7().set_nfts<system>(msg.caller, tokens, true)){
       case(#ok(val)) val;
       case(#err(err)) D.trap(err);
@@ -455,6 +472,8 @@ shared(_init_msg) actor class Example(_args : {
       };
   };
 
+  // Init function to approve entire collection to the deployer
+  // Useful for management and updation of metadata, leads to centralization
   private stable var _init = false;
   public shared(msg) func init() : async () {
     //can only be called once
@@ -500,10 +519,12 @@ shared(_init_msg) actor class Example(_args : {
       case(?#Ok(val)) val;
       case(?#Err(err)) D.trap(debug_show(err));
       case(_) D.trap("unknown");
-
-      
     };
   };
-  
+
+  public query func get_owner(): async Principal {
+    let bot = icrc7().get_state().owner;
+    return bot;
+  }
 
 };
