@@ -6,6 +6,9 @@ import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import D "mo:base/Debug";
 import Trie "mo:base/Trie";
+import Map "mo:map/Map";
+import { n32hash } "mo:map/Map";
+import { nhash } "mo:map/Map";
 
 import Vec "mo:vector";
 
@@ -86,6 +89,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   public type LibraryId = Nat32;
+  public type UserId = Nat32;
 
   public type Library = {
     library_id: LibraryId;
@@ -97,38 +101,33 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   public type User = {
-    user_id: Nat32;
+    user_id: UserId;
     user_account: Account;
     user_name: ?Text;
     library_ids: [LibraryId];
     nft_ids: [Nat32];
   };
 
-  // Create a trie key from a superhero identifier
-  private func key(x : LibraryId) : Trie.Key<LibraryId> {
-    return { hash = x; key = x };
-  };
+  stable var libraries = Map.new<LibraryId, Library>();
+  stable var users = Map.new<UserId, User>();
 
-  stable var libraries : Trie.Trie<LibraryId, Library> = Trie.empty();
-  stable var users : Trie.Trie<Nat32, Library> = Trie.empty();
+  public shared(msg) func create_user(user: User): async UserId {
+    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+    Map.set(users, n32hash, user.user_id, user);
+    return user.user_id;
+  };
 
   // Create a library
   public shared(msg) func create_library(library: Library): async LibraryId {
     // Only the admin can create a library
     if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-    libraries := Trie.replace(
-      libraries,
-      key(library.library_id),
-      Nat32.equal,
-      ?library,
-    ).0;
+    Map.set(libraries, n32hash, library.library_id , library);
     return library.library_id;
   };
 
   // 2) Get Libraries
   public query func get_library(library_id: LibraryId): async ?Library {
-    let result = Trie.find(libraries, key(library_id), Nat32.equal);
-    return result;
+    let result: ?Library = Map.get(libraries, n32hash, library_id);
   };
 
   // Initializing Migration state for migrating to future versions
