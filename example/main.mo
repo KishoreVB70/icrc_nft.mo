@@ -100,22 +100,28 @@ shared(_init_msg) actor class Example(_args : {
     nft_ids: Vec.Vector<Nat32>;
   };
 
-  public type User = {
-    user_id: UserId;
-    user_account: Account;
-    user_name: ?Text;
-    library_ids: [LibraryId];
-    nft_ids: [Nat32];
-  };
+  // public type User = {
+  //   user_id: UserId;
+  //   user_account: Account;
+  //   user_name: ?Text;
+  //   library_ids: [LibraryId];
+  //   nft_ids: [Nat32];
+  // };
+  // User related functions
+  // public shared(msg) func create_user(user: User): async UserId {
+  //   // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+  //   Map.set(users, n32hash, user.user_id, user);
+  //   return user.user_id;
+  // };
 
-  stable var libraries = Map.new<LibraryId, Library>();
-  stable var users = Map.new<UserId, User>();
+  // Stable variables
 
-  public shared(msg) func create_user(user: User): async UserId {
-    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-    Map.set(users, n32hash, user.user_id, user);
-    return user.user_id;
-  };
+  type LibraryIDS = Vec.Vector<LibraryID>;
+  stable var userslibraries = Map.new<Account, LibraryIDS>();
+
+  stable var libraries = Map.new<LibraryID, Library>();
+
+// Library related functions
 
   // Create a library
   public shared(msg) func create_library(library: Library): async LibraryId {
