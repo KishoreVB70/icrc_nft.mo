@@ -140,8 +140,9 @@ shared(_init_msg) actor class Example(_args : {
     Map.set(libraries, n32hash, library.library_id , library);
 
     // 2) Update user profile
-    let newArray = Array.init<LibraryId>(1, library.library_id);
-    Array.append<LibraryId>(user.library_ids, newArray);
+    // let newArray = Array.init<LibraryId>(1, library.library_id);
+    // let oldArray = user.library_ids;
+    // let updatedArray = Array.append<LibraryId>(user.library_ids, newArray);
 
     return library.library_id;
   };
