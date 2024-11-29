@@ -152,6 +152,58 @@ shared(_init_msg) actor class Example(_args : {
     return result;
   };
 
+  // Change library
+  public shared(msg) func change_library(library_id: LibraryID, nft_id: Nat32) {
+    /*
+    Checks:
+      1) Caller must be the owner of the NFT
+      2) Caller must be the owner fo the library
+
+    Changes:
+      1) Remove NFT from library 1
+      2) Add NFT to library 2
+      3) Update the metadata(library) of the NFT
+    */
+  };
+
+
+
+    /////////
+  // The following functions are not part of ICRC7 or ICRC37. They are provided as examples of how
+  // one might deploy an NFT.
+  /////////
+
+  // SetNFTRequest is an array of SetNFTItemRequests
+  // SetNFTItemRequests has type for metadata which is candyshared
+  public shared(msg) func icrcX_mint(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
+
+    // Official function provided by ICRC-7 to mint an NFT
+    // Must be careful as calling set_nfts on existing token will replace it with new metadata
+    // Only the deployer can call this function
+    switch(icrc7().set_nfts<system>(msg.caller, tokens, true)){
+      case(#ok(val)) {
+
+        // 1) Update the user profile with the NFT id
+
+        // 2) Update the library to include the NFT id
+
+        return val;
+      };
+      case(#err(err)) D.trap(err);
+    };
+  };
+
+  public shared(msg) func icrcX_burn(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
+      switch(icrc7().burn_nfts<system>(msg.caller, tokens)){
+        case(#ok(val)) {
+          // 1) Remove NFT from user profile
+          // 2) Remove NFT from library
+          return val;
+        };
+        case(#err(err)) D.trap(err);
+      };
+  };
+
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
@@ -536,31 +588,6 @@ shared(_init_msg) actor class Example(_args : {
 
   public query func get_tip() : async ICRC3.Tip {
     return icrc3().get_tip();
-  };
-
-  /////////
-  // The following functions are not part of ICRC7 or ICRC37. They are provided as examples of how
-  // one might deploy an NFT.
-  /////////
-
-  // SetNFTRequest is an array of SetNFTItemRequests
-  // SetNFTItemRequests has type for metadata which is candyshared
-  public shared(msg) func icrcX_mint(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
-
-    // Official function provided by ICRC-7 to mint an NFT
-    // Must be careful as calling set_nfts on existing token will replace it with new metadata
-    // Only the deployer can call this function
-    switch(icrc7().set_nfts<system>(msg.caller, tokens, true)){
-      case(#ok(val)) val;
-      case(#err(err)) D.trap(err);
-    };
-  };
-
-  public shared(msg) func icrcX_burn(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
-      switch(icrc7().burn_nfts<system>(msg.caller, tokens)){
-        case(#ok(val)) val;
-        case(#err(err)) D.trap(err);
-      };
   };
 
   // Init function to approve entire collection to the deployer
