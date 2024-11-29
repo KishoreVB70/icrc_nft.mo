@@ -63,6 +63,24 @@ shared(_init_msg) actor class Example(_args : {
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
+  public type NFTMetadata = {
+    audio: Text;
+    image: Text;
+    description: ?Text; // Optional
+    libraryId: ?Nat; // Optional
+  };
+
+  public type SetNFTRequest = [SetNFTItemRequest];
+
+  public type SetNFTItemRequest = {
+    token_id: Nat;
+    metadata: NFTMetadata;
+    owner: ?Account;
+    override: Bool;
+    memo: ?Blob;
+    created_at_time : ?Nat64;
+  };
+
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
@@ -454,6 +472,8 @@ shared(_init_msg) actor class Example(_args : {
   // one might deploy an NFT.
   /////////
 
+  // SetNFTRequest is an array of SetNFTItemRequests
+  // SetNFTItemRequests has type for metadata which is candyshared
   public shared(msg) func icrcX_mint(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
 
     // Official function provided by ICRC-7 to mint an NFT
