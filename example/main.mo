@@ -65,7 +65,10 @@ shared(_init_msg) actor class Example(_args : {
 
   public type NFTMetadata = {
     audio: Text;
-    image: Text;
+    duration: Nat;
+    audio_type: Text;
+    gengre: Text;
+    creator: Text; // Optional - name of the creator
     description: ?Text; // Optional
     libraryId: ?Nat; // Optional
   };
