@@ -86,7 +86,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   public type Library = {
-    library_id: Nat;
+    library_id: Nat32;
     name: Text;
     description: Text;
     thumbnail: Text;
@@ -97,10 +97,16 @@ shared(_init_msg) actor class Example(_args : {
   stable var libraries : Trie.Trie<Nat32, Library> = Trie.empty();
 
   // Create a library
-  public shared(msg) func create_library(library: Library) {
+  public shared(msg) func create_library(library: Library): async Nat32 {
     // Only the admin can create a library
     if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-    Map.set(map, nhash, library.library_id, library);
+    libraries := Trie.replace(
+      libraries,
+      key(library.library_id),
+      Nat32.equal,
+      ?library,
+    ).0;
+    return library.library_id;
   };
 
   stable var map = Map.new<Nat, Library>();
