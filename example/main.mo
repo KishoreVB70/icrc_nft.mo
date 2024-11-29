@@ -128,6 +128,7 @@ shared(_init_msg) actor class Example(_args : {
   // 2) Get Libraries
   public query func get_library(library_id: LibraryId): async ?Library {
     let result: ?Library = Map.get(libraries, n32hash, library_id);
+    return result;
   };
 
   // Initializing Migration state for migrating to future versions
