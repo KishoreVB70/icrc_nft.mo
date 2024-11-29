@@ -124,12 +124,16 @@ shared(_init_msg) actor class Example(_args : {
 // Library related functions
 
   // Create a library
-  public shared(msg) func create_library(library: Library): async LibraryId {
+  public shared(msg) func create_library(library: Library): async LibraryID {
     // Only the admin can create a library
-    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-    let user: ?User = Map.get(users, n32hash, library.user_id);
+    // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+    let userOpt: ?User = Map.get(users, n32hash, library.user_id);
     // User ID must be existent
-    if (user == null) D.trap("UserNonExistent");
+
+    let user = switch userOpt {
+        case (?value) value;
+        case null D.trap("Unexpected null"); // Safety check
+    };
 
     
     // 1) Create library
