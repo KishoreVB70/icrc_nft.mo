@@ -1,9 +1,9 @@
 // Base library imports
-import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
+import Nat32 "mo:base/Nat32";
 import D "mo:base/Debug";
 import Trie "mo:base/Trie";
 
@@ -85,8 +85,10 @@ shared(_init_msg) actor class Example(_args : {
     created_at_time : ?Nat64;
   };
 
+  public type LibraryId = Nat32;
+
   public type Library = {
-    library_id: Nat32;
+    library_id: LibraryId;
     name: Text;
     description: Text;
     thumbnail: Text;
@@ -94,10 +96,15 @@ shared(_init_msg) actor class Example(_args : {
     nft_ids: [Nat];
   };
 
-  stable var libraries : Trie.Trie<Nat32, Library> = Trie.empty();
+  // Create a trie key from a superhero identifier
+  private func key(x : LibraryId) : Trie.Key<LibraryId> {
+    return { hash = x; key = x };
+  };
+
+  stable var libraries : Trie.Trie<LibraryId, Library> = Trie.empty();
 
   // Create a library
-  public shared(msg) func create_library(library: Library): async Nat32 {
+  public shared(msg) func create_library(library: Library): async LibraryId {
     // Only the admin can create a library
     if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
     libraries := Trie.replace(
@@ -109,16 +116,10 @@ shared(_init_msg) actor class Example(_args : {
     return library.library_id;
   };
 
-
   // 2) Get Libraries
-  public query func get_library(library_ids: [Nat32]): async [Library] {
-    var result: [Library] = [];
-    for (id in library_ids.vals()) {
-      switch (Trie.find(libraries, key(id), Nat32.equal)) {
-        case (?library) { result := Array.append(result, [library]); }; // Found the library, add it to the result
-        case (null) {}; // Library not found, skip
-      };
-    };
+  public query func get_library(library_id: LibraryId): async ?Library {
+    let result = Trie.find(libraries, key(library_id), Nat32.equal);
+    return result;
   };
 
   // Initializing Migration state for migrating to future versions
