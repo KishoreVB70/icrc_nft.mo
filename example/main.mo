@@ -1,12 +1,11 @@
 // Base library imports
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
-import Map "mo:map9/Map";
-import { nhash } "mo:map9/Map";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
 import D "mo:base/Debug";
+import Trie "mo:base/Trie";
 
 import Vec "mo:vector";
 
@@ -94,6 +93,8 @@ shared(_init_msg) actor class Example(_args : {
     owner: Account;
     nft_ids: [Nat];
   };
+
+  stable var libraries : Trie.Trie<Nat32, Library> = Trie.empty();
 
   // Create a library
   public shared(msg) func create_library(library: Library) {
