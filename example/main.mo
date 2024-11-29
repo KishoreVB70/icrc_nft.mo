@@ -96,12 +96,21 @@ shared(_init_msg) actor class Example(_args : {
     nft_ids: [Nat];
   };
 
+  public type User = {
+    user_id: Nat32;
+    user_account: Account;
+    user_name: ?Text;
+    library_ids: [LibraryId];
+    nft_ids: [Nat32];
+  };
+
   // Create a trie key from a superhero identifier
   private func key(x : LibraryId) : Trie.Key<LibraryId> {
     return { hash = x; key = x };
   };
 
   stable var libraries : Trie.Trie<LibraryId, Library> = Trie.empty();
+  stable var users : Trie.Trie<Nat32, Library> = Trie.empty();
 
   // Create a library
   public shared(msg) func create_library(library: Library): async LibraryId {
