@@ -95,8 +95,15 @@ shared(_init_msg) actor class Example(_args : {
     nft_ids: [Nat];
   };
 
+  // Create a library
+  public shared(msg) func create_library(library: Library) {
+    // Only the admin can create a library
+    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+    Map.set(map, nhash, library.library_id, library);
+  };
+
   stable var map = Map.new<Nat, Library>();
-  
+
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
