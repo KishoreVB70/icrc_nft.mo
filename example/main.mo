@@ -66,6 +66,8 @@ shared(_init_msg) actor class Example(_args : {
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
+  // Data types for Management
+
   public type NFTMetadata = {
     audio: Text;
     duration: Nat;
@@ -87,17 +89,15 @@ shared(_init_msg) actor class Example(_args : {
     created_at_time : ?Nat64;
   };
 
-  public type LibraryId = Nat32;
-  public type UserId = Nat32;
+  public type LibraryID = Nat32;
 
   public type Library = {
-    library_id: LibraryId;
+    library_id: LibraryID;
     name: Text;
     description: Text;
     thumbnail: Text;
     owner: Account;
-    user_id: UserId;
-    nft_ids: [Nat];
+    nft_ids: Vec.Vector<Nat32>;
   };
 
   public type User = {
