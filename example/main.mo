@@ -1,6 +1,8 @@
 // Base library imports
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
+import Map "mo:map9/Map";
+import { nhash } "mo:map9/Map";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
@@ -84,6 +86,17 @@ shared(_init_msg) actor class Example(_args : {
     created_at_time : ?Nat64;
   };
 
+  public type Library = {
+    library_id: Nat;
+    name: Text;
+    description: Text;
+    thumbnail: Text;
+    owner: Account;
+    nft_ids: [Nat];
+  };
+
+  stable var map = Map.new<Nat, Library>();
+  
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
