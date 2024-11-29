@@ -109,7 +109,17 @@ shared(_init_msg) actor class Example(_args : {
     return library.library_id;
   };
 
-  stable var map = Map.new<Nat, Library>();
+
+  // 2) Get Libraries
+  public query func get_library(library_ids: [Nat32]): async [Library] {
+    var result: [Library] = [];
+    for (id in library_ids.vals()) {
+      switch (Trie.find(libraries, key(id), Nat32.equal)) {
+        case (?library) { result := Array.append(result, [library]); }; // Found the library, add it to the result
+        case (null) {}; // Library not found, skip
+      };
+    };
+  };
 
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
