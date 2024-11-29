@@ -6,15 +6,12 @@ import Time "mo:base/Time";
 import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import D "mo:base/Debug";
-import Trie "mo:base/Trie";
 import Map "mo:map/Map";
 import { n32hash } "mo:map/Map";
-import { nhash } "mo:map/Map";
 
 import Vec "mo:vector";
 
 // Certified data for ICRC-3
-import Array "mo:base/Array";
 import CertifiedData "mo:base/CertifiedData";
 import CertTree "mo:cert/CertTree";
 
