@@ -252,18 +252,92 @@ shared(_init_msg) actor class Example(_args : {
     // Official function provided by ICRC-7 to mint an NFT
     // Must be careful as calling set_nfts on existing token will replace it with new metadata
     // Only the deployer can call this function
+
+    // Way 1) Updating the library before the call
+
+    // Way 2) Updating the library after the call
     switch(icrc7().set_nfts<system>(msg.caller, tokens, true)){
       case(#ok(val)) {
+        /*
+          for (result in val.vals()) {
 
-        // 1) Update the user profile with the NFT id
+            switch (result) {
+              case (#Ok(?natValue)) {
+                // If it's #Ok with a Nat value, add it to the list
 
-        // 2) Update the library to include the NFT id
+                // 1) Get the library
+                // 1a) Get the library id from the nft id
+                let lib_id: Nat = 0;
+                let token_ids = [natValue];
+                let metadatas: [?[(Text, Value)]]  = icrc7().token_metadata(token_ids);
 
+                let metadata: ?[(Text, Value)] = metadatas[0];
+
+                switch(metadata) {
+                  case(?metadataval) {
+                    for ((key, value) in metadataval.vals()) {
+                      if(key.equals("library_id")) {
+                        lib_id: value;
+                      };
+                    // metadataval is an array of Text, Value tuples, we need to traverse the array and find the value
+
+                    let lib: ?Library = Map.get(libraries, n32hash, metadataval.library_id);
+                  };
+                  case(null){};
+                };
+
+                switch (lib) {
+                  case(?val) {
+                    // Library id exists
+                    let list = val.nft_ids;
+                    List.push(token_ids);
+                  };
+                  case(null) {
+                  };
+                };
+              };
+
+              case _{
+              };
+            };
+          };
+        */
         return val;
       };
       case(#err(err)) D.trap(err);
     };
   };
+
+  /*
+            switch (result) {
+            case (#ok(?natValue)) {
+              // If it's #Ok with a Nat value, add it to the list
+
+              // 1) Get the library
+              // 1a) Get the library id from the nft id
+              let token_ids = [natValue];
+              let metadata = icrc7().token_metadata(token_ids);
+
+              let lib: ?Library = Map.get(libraries, n32hash, metadata[0].library_id);
+
+              switch (lib) {
+                case(?val) {
+                  // Library id exists
+                  let list = val.nft_ids;
+                  List.push(token_ids);
+                };
+                case(null) {
+                };
+              };
+            };
+            case (#Err(_)) {
+              // Handle the error case if necessary (e.g., logging)
+            };
+            case (#GenericError { error_code; message }) {
+              // Handle generic errors (e.g., logging)
+            };
+          };
+  */
 
   public shared(msg) func icrcX_burn(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
       switch(icrc7().burn_nfts<system>(msg.caller, tokens)){
