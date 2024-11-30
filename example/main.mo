@@ -102,6 +102,7 @@ shared(_init_msg) actor class Example(_args : {
   // };
 
   public type LibraryID = Nat32;
+  type LibraryIDS = Set.Set<LibraryID>;
 
   public type Library = {
     library_id: LibraryID;
@@ -127,10 +128,7 @@ shared(_init_msg) actor class Example(_args : {
   // };
 
   // Stable variables
-
-  type LibraryIDS = Set.Set<LibraryID>;
   stable var userslibraries = Map.new<Account, LibraryIDS>();
-
   stable var libraries = Map.new<LibraryID, Library>();
 
 // Library related functions
