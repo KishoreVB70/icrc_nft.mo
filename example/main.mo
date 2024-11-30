@@ -80,8 +80,8 @@ shared(_init_msg) actor class Example(_args : {
     audio_type: Text;
     gengre: Text;
     creator: Text; // Optional - name of the creator
-    description: ?Text; // Optional
-    library_id: ?Nat; // Optional
+    description: Text; // Optional
+    library_id: Nat32; // Optional
   };
 
   public type SetNFTRequest = [SetNFTItemRequest];
@@ -95,12 +95,6 @@ shared(_init_msg) actor class Example(_args : {
     created_at_time : ?Nat64;
   };
 
-  // public type SetNFTResult =  {
-  //   #Ok: ?Nat;
-  //   #Err: SetNFTError;
-  //   #GenericError : { error_code : Nat; message : Text };
-  // };
-
   public type LibraryID = Nat32;
   type LibraryIDS = Set.Set<LibraryID>;
 
@@ -113,19 +107,39 @@ shared(_init_msg) actor class Example(_args : {
     nft_ids: List.List<Nat>;
   };
 
-  // public type User = {
-  //   user_id: UserId;
-  //   user_account: Account;
-  //   user_name: ?Text;
-  //   library_ids: [LibraryId];
-  //   nft_ids: [Nat32];
+  // public type Update = {
+  //   name : Text;
+  //   mode : UpdateMode;
   // };
-  // User related functions
-  // public shared(msg) func create_user(user: User): async UserId {
-  //   // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-  //   Map.set(users, n32hash, user.user_id, user);
-  //   return user.user_id;
+  // /// Mode for the update operation.
+  // public type UpdateMode = {
+  //   #Set    : Candy;
+  //   #Lock    : Candy;
+  //   #Next   : [Update];
   // };
+  // public type UpdateNFTRequest = [UpdateNFTItemRequest];
+  // public type UpdateNFTItemRequest = {
+  //   memo: ?Blob;
+  //   created_at_time : ?Nat64;
+  //   token_id: Nat;
+  //   updates: [CandyTypesLib.Update]
+  // };
+
+  /*
+      public type User = {
+        user_id: UserId;
+        user_account: Account;
+        user_name: ?Text;
+        library_ids: [LibraryId];
+        nft_ids: [Nat32];
+      };
+      User related functions
+      public shared(msg) func create_user(user: User): async UserId {
+        // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+        Map.set(users, n32hash, user.user_id, user);
+        return user.user_id;
+      };
+  */
 
   // Stable variables
   stable var userslibraries = Map.new<Account, LibraryIDS>();
@@ -184,17 +198,102 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Change library
-  public shared(msg) func change_library(library_id: LibraryID, nft_id: Nat32) {
-    /*
-    Checks:
-      1) Caller must be the owner of the NFT
-      2) Caller must be the owner fo the library
+  public shared(msg) func change_library(owner: Account, library_id_from: LibraryID, library_id_to: LibraryID, nft_id: Nat) {
+    // Checks
 
-    Changes:
-      1) Remove NFT from library 1
-      2) Add NFT to library 2
-      3) Update the metadata(library) of the NFT
-    */
+    // 1) Account must be the owner of the NFT
+    switch( icrc7().get_token_owner_canonical(nft_id) ){
+      case(#ok(val)) {
+        let acc = val;
+        if (owner != acc) {
+          return;
+        }
+      };
+      case _ D.trap("UnAuthorized");
+    };
+
+    // 2) Account must be the owner of the library two
+    let lib_quer: ?Library = Map.get(libraries, n32hash, library_id_to);
+    switch lib_quer {
+      case(?val) {
+        if (val.owner != owner) {
+          return;
+        };
+      };
+      case(null) {
+        return;
+      };
+    };
+
+
+    // Changes
+
+    // 1) Remove NFT from library 1
+    let lib_from: ?Library = Map.get(libraries, n32hash, library_id_from);
+    switch lib_from {
+      case (?val) {
+        // Remove item
+        // Warn: O(N) operation
+        // Couldn't implement a hash set due to stable memory limitation
+        let new_list = List.filter<Nat>(val.nft_ids, func(item: Nat): Bool{
+          item != nft_id
+        });
+
+        let updated_lib: Library = {
+          description = val.description;
+          library_id = val.library_id;
+          name = val.name;
+          nft_ids = new_list;
+          owner = val.owner;
+          thumbnail = val.thumbnail;
+        };
+
+        Map.set(libraries, n32hash, library_id_from, updated_lib);
+      };
+      case (null) {
+      };
+    };
+
+    // 2) Add the NFT to library to
+    let lib_to: ?Library = Map.get(libraries, n32hash, library_id_to);
+    switch lib_to {
+      case (?val) {
+        // Add item
+        // O(1) operation
+        let new_list = List.push(nft_id, val.nft_ids);
+
+        let updated_lib: Library = {
+          description = val.description;
+          library_id = val.library_id;
+          name = val.name;
+          nft_ids = new_list;
+          owner = val.owner;
+          thumbnail = val.thumbnail;
+        };
+
+        Map.set(libraries, n32hash, library_id_to, updated_lib);
+      };
+      case (null) {
+      };
+    };
+
+    // 3) Update the NFT metadata
+    let update_request: ICRC7.UpdateNFTRequest = 
+    [
+      {
+        token_id = nft_id;
+        created_at_time = null;
+        memo = null;
+        updates = [
+          {
+            name = "library_id";
+            mode = #Set(#Nat32(library_id_to));
+          }
+        ];
+      }
+    ];
+
+    let _result = icrc7().update_nfts<system>(msg.caller, update_request);
   };
 
   // Get list of library ids of of users
