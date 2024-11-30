@@ -81,7 +81,7 @@ shared(_init_msg) actor class Example(_args : {
     gengre: Text;
     creator: Text; // Optional - name of the creator
     description: ?Text; // Optional
-    libraryId: ?Nat; // Optional
+    library_id: ?Nat; // Optional
   };
 
   public type SetNFTRequest = [SetNFTItemRequest];
@@ -95,6 +95,12 @@ shared(_init_msg) actor class Example(_args : {
     created_at_time : ?Nat64;
   };
 
+  // public type SetNFTResult =  {
+  //   #Ok: ?Nat;
+  //   #Err: SetNFTError;
+  //   #GenericError : { error_code : Nat; message : Text };
+  // };
+
   public type LibraryID = Nat32;
 
   public type Library = {
@@ -103,8 +109,7 @@ shared(_init_msg) actor class Example(_args : {
     description: Text;
     thumbnail: Text;
     owner: Account;
-    // nft_ids: List.List<Nat32>;
-    nft_ids: List.List<Nat32>;
+    nft_ids: List.List<Nat>;
   };
 
   // public type User = {
@@ -131,13 +136,16 @@ shared(_init_msg) actor class Example(_args : {
 // Library related functions
 
   // Create a library
-  public shared(msg) func create_library(library: Library): async LibraryID {
+  public func create_library(library: Library): async LibraryID {
     // Only the admin can create a library
     // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+  
+    // 1) Create the library
+    Map.set(libraries, n32hash, library.library_id , library);
 
+    // 2) Update the user libraries
     let _hasUser: Bool = Map.has(userslibraries, ahash, library.owner);
     let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
-
 
     switch userlibs {
       case (?val) {
@@ -152,15 +160,6 @@ shared(_init_msg) actor class Example(_args : {
         let _result1 = Map.put(userslibraries, ahash, library.owner, newSet);
       };
     };
-
-    
-    // 1) Create library
-    Map.set(libraries, n32hash, library.library_id , library);
-
-    // 2) Update user profile
-    // let newArray = Array.init<LibraryId>(1, library.library_id);
-    // let oldArray = user.library_ids;
-    // let updatedArray = Array.append<LibraryId>(user.library_ids, newArray);
 
     return library.library_id;
   };
@@ -200,6 +199,7 @@ shared(_init_msg) actor class Example(_args : {
     */
   };
 
+  // Get list of library ids of of users
   public func get_user_libraries(user: Account): async ?[LibraryID] {
     let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
     switch(result) {
@@ -698,6 +698,7 @@ shared(_init_msg) actor class Example(_args : {
       icrc37().approve_collection<system>( msg.caller, approvals);
   };
 
+  // System capabililties not provided to the functions, Why?
   public shared(msg) func icrc7_transfer<system>(args: [TransferArgs]) : async [?TransferResult] {
       icrc7().transfer(msg.caller, args);
   };
