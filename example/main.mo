@@ -163,7 +163,22 @@ shared(_init_msg) actor class Example(_args : {
     return library.library_id;
   };
 
-  // Get Libraries
+  // Get multiple Libraries
+  public query func get_libraries(library_ids: [LibraryID]): async [Library] {
+    let libs = Vec.new<Library>();
+    for (lib_id in library_ids.vals()) {
+      let lib: ?Library = Map.get(libraries, n32hash, lib_id);
+      switch lib {
+        case (?val) {
+          Vec.add(libs, val);
+        };
+        case (null) {};
+      };
+    };
+    return Vec.toArray(libs);
+  };
+
+  // Get a single library
   public query func get_library(library_id: LibraryID): async ?Library {
     let result: ?Library = Map.get(libraries, n32hash, library_id);
     return result;
