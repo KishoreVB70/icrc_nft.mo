@@ -178,6 +178,19 @@ shared(_init_msg) actor class Example(_args : {
     */
   };
 
+  public func get_user_libraries(user: Account): async ?[LibraryID] {
+    let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
+    switch(result) {
+      case(?val) {
+        let array = Set.toArray(val);
+        return ?array;
+      };
+      case null {
+        null
+      };
+    };
+  };
+
 
 
     /////////
