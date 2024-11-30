@@ -127,12 +127,23 @@ shared(_init_msg) actor class Example(_args : {
   public shared(msg) func create_library(library: Library): async LibraryID {
     // Only the admin can create a library
     // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-    let userOpt: ?User = Map.get(users, n32hash, library.user_id);
-    // User ID must be existent
 
-    let user = switch userOpt {
-        case (?value) value;
-        case null D.trap("Unexpected null"); // Safety check
+    let _hasUser: Bool = Map.has(userslibraries, ahash, library.owner);
+    let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
+
+
+    switch userlibs {
+      case (?val) {
+        // User account exists, and hence add the new library to user account
+        let _result: Bool = Set.put(val, n32hash, library.library_id);
+        let _result1 = Map.put(userslibraries, ahash, library.owner, val);
+      };
+      case (null) {
+        // User account doesn't exist, hence add new account to the mapping
+        let newSet = Set.new<LibraryID>();
+        let _result: Bool = Set.put(newSet, n32hash, library.library_id);
+        let _result1 = Map.put(userslibraries, ahash, library.owner, newSet);
+      };
     };
 
     
