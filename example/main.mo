@@ -196,6 +196,33 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
+  // Add nft id to library
+  public func add_nft_to_library(nft_id: Nat, library_id: LibraryID): async Bool {
+    // Get the library
+    let lib: ?Library = Map.get(libraries, n32hash, library_id);
+
+    switch lib {
+      case(?val) {
+        let new_list = List.push(nft_id, val.nft_ids);
+
+        let updated_lib: Library = {
+          description = val.description;
+          library_id = val.library_id;
+          name = val.name;
+          nft_ids = new_list;
+          owner = val.owner;
+          thumbnail = val.thumbnail;
+        };
+
+        Map.set(libraries, n32hash, library_id, updated_lib);
+        return true;
+      };
+      case (null) {
+        return false;
+      };
+    };
+  };
+
 
 
     /////////
