@@ -97,7 +97,8 @@ shared(_init_msg) actor class Example(_args : {
     description: Text;
     thumbnail: Text;
     owner: Account;
-    nft_ids: Vec.Vector<Nat32>;
+    // nft_ids: List.List<Nat32>;
+    nft_ids: List.List<Nat32>;
   };
 
   // public type User = {
@@ -116,7 +117,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // Stable variables
 
-  type LibraryIDS = Vec.Vector<LibraryID>;
+  type LibraryIDS = Set.Set<LibraryID>;
   stable var userslibraries = Map.new<Account, LibraryIDS>();
 
   stable var libraries = Map.new<LibraryID, Library>();
