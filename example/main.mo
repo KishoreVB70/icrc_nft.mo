@@ -9,6 +9,7 @@ import D "mo:base/Debug";
 import Map "mo:map/Map";
 import Set "mo:map/Set";
 import { n32hash } "mo:map/Map";
+import Result "mo:base/Result";
 
 import Vec "mo:vector";
 import List "mo:base/List";
@@ -16,6 +17,7 @@ import List "mo:base/List";
 
 // Certified data for ICRC-3
 import CertifiedData "mo:base/CertifiedData";
+import Bool "mo:base/Bool";
 import CertTree "mo:cert/CertTree";
 
 // Standards
