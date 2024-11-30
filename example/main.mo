@@ -7,9 +7,12 @@ import Nat "mo:base/Nat";
 import Nat32 "mo:base/Nat32";
 import D "mo:base/Debug";
 import Map "mo:map/Map";
+import Set "mo:map/Set";
 import { n32hash } "mo:map/Map";
 
 import Vec "mo:vector";
+import List "mo:base/List";
+
 
 // Certified data for ICRC-3
 import CertifiedData "mo:base/CertifiedData";
@@ -19,6 +22,7 @@ import CertTree "mo:cert/CertTree";
 import ICRC7 "mo:icrc7-mo";
 import ICRC37 "mo:icrc37-mo";
 import ICRC3 "mo:icrc3-mo";
+import {ahash} "types";
 
 // Default init args
 import ICRC7Default "./initial_state/icrc7";
