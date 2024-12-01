@@ -197,8 +197,9 @@ shared(_init_msg) actor class Example(_args : {
     return result;
   };
 
-  // Change library
-  public shared(msg) func change_library(owner: Account, library_id_from: LibraryID, library_id_to: LibraryID, nft_id: Nat) {
+  // Change library or assign a  library 
+  // Have to improve the API -> Has to return something
+  public shared(msg) func change_library(owner: Account, library_id_from: ?LibraryID, library_id_to: LibraryID, nft_id: Nat) {
     // Checks
 
     // 1) Account must be the owner of the NFT
@@ -228,31 +229,36 @@ shared(_init_msg) actor class Example(_args : {
 
     // Changes
 
-    // 1) Remove NFT from library 1
-    let lib_from: ?Library = Map.get(libraries, n32hash, library_id_from);
-    switch lib_from {
-      case (?val) {
-        // Remove item
-        // Warn: O(N) operation
-        // Couldn't implement a hash set due to stable memory limitation
-        let new_list = List.filter<Nat>(val.nft_ids, func(item: Nat): Bool{
-          item != nft_id
-        });
+    // 1) Remove NFT from library 1 if present in the input
+    switch library_id_from {
+      case (?lib_id_from) {
+        let lib_from: ?Library = Map.get(libraries, n32hash, lib_id_from);
+        switch lib_from {
+          case (?val) {
+            // Remove item
+            // Warn: O(N) operation
+            // Couldn't implement a hash set due to stable memory limitation
+            let new_list = List.filter<Nat>(val.nft_ids, func(item: Nat): Bool{
+              item != nft_id
+            });
 
-        let updated_lib: Library = {
-          description = val.description;
-          library_id = val.library_id;
-          name = val.name;
-          nft_ids = new_list;
-          owner = val.owner;
-          thumbnail = val.thumbnail;
+            let updated_lib: Library = {
+              description = val.description;
+              library_id = val.library_id;
+              name = val.name;
+              nft_ids = new_list;
+              owner = val.owner;
+              thumbnail = val.thumbnail;
+            };
+
+            Map.set(libraries, n32hash, lib_id_from, updated_lib);
+          };
+          case (null) {};
         };
-
-        Map.set(libraries, n32hash, library_id_from, updated_lib);
       };
-      case (null) {
-      };
+      case (null) {};
     };
+
 
     // 2) Add the NFT to library to
     let lib_to: ?Library = Map.get(libraries, n32hash, library_id_to);
@@ -346,7 +352,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // SetNFTRequest is an array of SetNFTItemRequests
   // SetNFTItemRequests has type for metadata which is candyshared
-  public shared(msg) func icrcX_mint(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
+  public shared(msg) func mint_nft(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
 
     // Official function provided by ICRC-7 to mint an NFT
     // Must be careful as calling set_nfts on existing token will replace it with new metadata
@@ -438,7 +444,7 @@ shared(_init_msg) actor class Example(_args : {
           };
   */
 
-  public shared(msg) func icrcX_burn(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
+  public shared(msg) func butn_nft(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
       switch(icrc7().burn_nfts<system>(msg.caller, tokens)){
         case(#ok(val)) {
           // 1) Remove NFT from user profile
