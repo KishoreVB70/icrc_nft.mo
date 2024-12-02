@@ -234,7 +234,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // Change library or assign a  library 
   // Have to improve the API -> Has to return something
-  public shared(msg) func change_library(owner: Account, library_id_from: ?LibraryID, library_id_to: LibraryID, nft_id: Nat) {
+  public shared(msg) func change_library(owner: Account, library_id_from: ?LibraryID, library_id_to: LibraryID, nft_id: Nat): async Bool {
     // Checks
 
     // 1) Account must be the owner of the NFT
@@ -242,10 +242,10 @@ shared(_init_msg) actor class Example(_args : {
       case(#ok(val)) {
         let acc = val;
         if (owner != acc) {
-          return;
+          return false;
         }
       };
-      case _ D.trap("UnAuthorized");
+      case _ return false;
     };
 
     // 2) Account must be the owner of the library two
@@ -253,11 +253,11 @@ shared(_init_msg) actor class Example(_args : {
     switch lib_quer {
       case(?val) {
         if (val.owner != owner) {
-          return;
+          return false;
         };
       };
       case(null) {
-        return;
+        return false;
       };
     };
 
@@ -340,6 +340,7 @@ shared(_init_msg) actor class Example(_args : {
     ];
 
     let _result = icrc7().update_nfts<system>(msg.caller, update_request);
+    return true;
   };
 
   // Get list of library ids of of users
