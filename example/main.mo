@@ -9,6 +9,7 @@ import D "mo:base/Debug";
 import Map "mo:map/Map";
 import Set "mo:map/Set";
 import { n32hash } "mo:map/Map";
+import { nhash } "mo:map/Map";
 import Result "mo:base/Result";
 
 import Vec "mo:vector";
@@ -108,11 +109,19 @@ shared(_init_msg) actor class Example(_args : {
     };
   */
 
-  public type LibraryID = Nat32;
+  public type LibraryID = Nat;
   type LibraryIDS = Set.Set<LibraryID>;
 
   public type Library = {
     library_id: LibraryID;
+    name: Text;
+    description: Text;
+    thumbnail: Text;
+    owner: Account;
+    nft_ids: List.List<Nat>;
+  };
+
+  public type CreateLibraryRequest = {
     name: Text;
     description: Text;
     thumbnail: Text;
@@ -166,7 +175,7 @@ shared(_init_msg) actor class Example(_args : {
     // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
   
     // 1) Create the library
-    Map.set(libraries, n32hash, library.library_id , library);
+    Map.set(libraries, nhash, library.library_id , library);
 
     // 2) Update the user libraries
     let _hasUser: Bool = Map.has(userslibraries, ahash, library.owner);
@@ -175,13 +184,13 @@ shared(_init_msg) actor class Example(_args : {
     switch userlibs {
       case (?val) {
         // User account exists, and hence add the new library to user account
-        let _result: Bool = Set.put(val, n32hash, library.library_id);
+        let _result: Bool = Set.put(val, nhash, library.library_id);
         let _result1 = Map.put(userslibraries, ahash, library.owner, val);
       };
       case (null) {
         // User account doesn't exist, hence add new account to the mapping
         let newSet = Set.new<LibraryID>();
-        let _result: Bool = Set.put(newSet, n32hash, library.library_id);
+        let _result: Bool = Set.put(newSet, nhash, library.library_id);
         let _result1 = Map.put(userslibraries, ahash, library.owner, newSet);
       };
     };
@@ -193,7 +202,7 @@ shared(_init_msg) actor class Example(_args : {
   public query func get_libraries(library_ids: [LibraryID]): async [Library] {
     let libs = Vec.new<Library>();
     for (lib_id in library_ids.vals()) {
-      let lib: ?Library = Map.get(libraries, n32hash, lib_id);
+      let lib: ?Library = Map.get(libraries, nhash, lib_id);
       switch lib {
         case (?val) {
           Vec.add(libs, val);
@@ -206,7 +215,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // Get a single library
   public query func get_library(library_id: LibraryID): async ?Library {
-    let result: ?Library = Map.get(libraries, n32hash, library_id);
+    let result: ?Library = Map.get(libraries, nhash, library_id);
     return result;
   };
 
@@ -227,7 +236,7 @@ shared(_init_msg) actor class Example(_args : {
     };
 
     // 2) Account must be the owner of the library two
-    let lib_quer: ?Library = Map.get(libraries, n32hash, library_id_to);
+    let lib_quer: ?Library = Map.get(libraries, nhash, library_id_to);
     switch lib_quer {
       case(?val) {
         if (val.owner != owner) {
@@ -245,7 +254,7 @@ shared(_init_msg) actor class Example(_args : {
     // 1) Remove NFT from library 1 if present in the input
     switch library_id_from {
       case (?lib_id_from) {
-        let lib_from: ?Library = Map.get(libraries, n32hash, lib_id_from);
+        let lib_from: ?Library = Map.get(libraries, nhash, lib_id_from);
         switch lib_from {
           case (?val) {
             // Remove item
@@ -264,7 +273,7 @@ shared(_init_msg) actor class Example(_args : {
               thumbnail = val.thumbnail;
             };
 
-            Map.set(libraries, n32hash, lib_id_from, updated_lib);
+            Map.set(libraries, nhash, lib_id_from, updated_lib);
           };
           case (null) {};
         };
@@ -274,7 +283,7 @@ shared(_init_msg) actor class Example(_args : {
 
 
     // 2) Add the NFT to library to
-    let lib_to: ?Library = Map.get(libraries, n32hash, library_id_to);
+    let lib_to: ?Library = Map.get(libraries, nhash, library_id_to);
     switch lib_to {
       case (?val) {
         // Add item
@@ -290,7 +299,7 @@ shared(_init_msg) actor class Example(_args : {
           thumbnail = val.thumbnail;
         };
 
-        Map.set(libraries, n32hash, library_id_to, updated_lib);
+        Map.set(libraries, nhash, library_id_to, updated_lib);
       };
       case (null) {
       };
@@ -306,7 +315,7 @@ shared(_init_msg) actor class Example(_args : {
         updates = [
           {
             name = "library_id";
-            mode = #Set(#Nat32(library_id_to));
+            mode = #Set(#Nat(library_id_to));
           }
         ];
       }
@@ -332,7 +341,7 @@ shared(_init_msg) actor class Example(_args : {
   // Add nft id to library
   public func add_nft_to_library(nft_id: Nat, library_id: LibraryID): async Bool {
     // Get the library
-    let lib: ?Library = Map.get(libraries, n32hash, library_id);
+    let lib: ?Library = Map.get(libraries, nhash, library_id);
 
     switch lib {
       case(?val) {
@@ -347,7 +356,7 @@ shared(_init_msg) actor class Example(_args : {
           thumbnail = val.thumbnail;
         };
 
-        Map.set(libraries, n32hash, library_id, updated_lib);
+        Map.set(libraries, nhash, library_id, updated_lib);
         return true;
       };
       case (null) {
