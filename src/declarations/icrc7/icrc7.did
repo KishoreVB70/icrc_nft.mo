@@ -360,7 +360,8 @@ type Example =
  service {
    add_nft_to_library: (nat, LibraryID) -> (bool);
    assign: (nat, Account__2) -> (nat);
-   change_library: (LibraryID, nat32) -> () oneway;
+   butn_nft: (BurnNFTRequest) -> (BurnNFTBatchResponse);
+   change_library: (Account__2, opt LibraryID, LibraryID, nat) -> () oneway;
    create_library: (Library) -> (LibraryID);
    get_libraries: (vec LibraryID) -> (vec Library) query;
    get_library: (LibraryID) -> (opt Library) query;
@@ -417,9 +418,8 @@ type Example =
    icrc7_total_supply: () -> (nat) query;
    icrc7_transfer: (vec TransferArgs) -> (vec opt TransferResult);
    icrc7_tx_window: () -> (opt nat) query;
-   icrcX_burn: (BurnNFTRequest) -> (BurnNFTBatchResponse);
-   icrcX_mint: (SetNFTRequest) -> (vec SetNFTResult);
    init: () -> ();
+   mint_nft: (SetNFTRequest) -> (vec SetNFTResult);
  };
 type DataCertificate = 
  record {

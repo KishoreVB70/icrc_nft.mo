@@ -123,7 +123,11 @@ export interface DataCertificate {
 export interface Example {
   'add_nft_to_library' : ActorMethod<[bigint, LibraryID], boolean>,
   'assign' : ActorMethod<[bigint, Account__2], bigint>,
-  'change_library' : ActorMethod<[LibraryID, number], undefined>,
+  'butn_nft' : ActorMethod<[BurnNFTRequest], BurnNFTBatchResponse>,
+  'change_library' : ActorMethod<
+    [Account__2, [] | [LibraryID], LibraryID, bigint],
+    undefined
+  >,
   'create_library' : ActorMethod<[Library], LibraryID>,
   'get_libraries' : ActorMethod<[Uint32Array | number[]], Array<Library>>,
   'get_library' : ActorMethod<[LibraryID], [] | [Library]>,
@@ -205,9 +209,8 @@ export interface Example {
     Array<[] | [TransferResult]>
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
-  'icrcX_burn' : ActorMethod<[BurnNFTRequest], BurnNFTBatchResponse>,
-  'icrcX_mint' : ActorMethod<[SetNFTRequest], Array<SetNFTResult>>,
   'init' : ActorMethod<[], undefined>,
+  'mint_nft' : ActorMethod<[SetNFTRequest], Array<SetNFTResult>>,
 }
 export interface GetArchivesArgs { 'from' : [] | [Principal] }
 export type GetArchivesResult = Array<GetArchivesResultItem>;

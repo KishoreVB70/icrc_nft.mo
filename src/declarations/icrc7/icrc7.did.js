@@ -65,6 +65,37 @@ export const idlFactory = ({ IDL }) => {
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
+  const BurnNFTRequest = IDL.Record({
+    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'tokens' : IDL.Vec(IDL.Nat),
+    'created_at_time' : IDL.Opt(IDL.Nat64),
+  });
+  const BurnNFTError = IDL.Variant({
+    'GenericError' : IDL.Record({
+      'message' : IDL.Text,
+      'error_code' : IDL.Nat,
+    }),
+    'NonExistingTokenId' : IDL.Null,
+    'InvalidBurn' : IDL.Null,
+  });
+  const BurnNFTResult = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : BurnNFTError });
+  const BurnNFTItemResponse = IDL.Record({
+    'result' : BurnNFTResult,
+    'token_id' : IDL.Nat,
+  });
+  const BurnNFTBatchError = IDL.Variant({
+    'GenericError' : IDL.Record({
+      'message' : IDL.Text,
+      'error_code' : IDL.Nat,
+    }),
+    'Unauthorized' : IDL.Null,
+    'CreatedInFuture' : IDL.Record({ 'ledger_time' : IDL.Nat64 }),
+    'TooOld' : IDL.Null,
+  });
+  const BurnNFTBatchResponse = IDL.Variant({
+    'Ok' : IDL.Vec(BurnNFTItemResponse),
+    'Err' : BurnNFTBatchError,
+  });
   List.fill(IDL.Opt(IDL.Tuple(IDL.Nat, List)));
   const Library = IDL.Record({
     'thumbnail' : IDL.Text,
@@ -337,37 +368,6 @@ export const idlFactory = ({ IDL }) => {
     'TooOld' : IDL.Null,
   });
   const TransferResult = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : TransferError });
-  const BurnNFTRequest = IDL.Record({
-    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'tokens' : IDL.Vec(IDL.Nat),
-    'created_at_time' : IDL.Opt(IDL.Nat64),
-  });
-  const BurnNFTError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'NonExistingTokenId' : IDL.Null,
-    'InvalidBurn' : IDL.Null,
-  });
-  const BurnNFTResult = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : BurnNFTError });
-  const BurnNFTItemResponse = IDL.Record({
-    'result' : BurnNFTResult,
-    'token_id' : IDL.Nat,
-  });
-  const BurnNFTBatchError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'Unauthorized' : IDL.Null,
-    'CreatedInFuture' : IDL.Record({ 'ledger_time' : IDL.Nat64 }),
-    'TooOld' : IDL.Null,
-  });
-  const BurnNFTBatchResponse = IDL.Variant({
-    'Ok' : IDL.Vec(BurnNFTItemResponse),
-    'Err' : BurnNFTBatchError,
-  });
   const PropertyShared = IDL.Record({
     'value' : CandyShared,
     'name' : IDL.Text,
@@ -459,7 +459,12 @@ export const idlFactory = ({ IDL }) => {
   const Example = IDL.Service({
     'add_nft_to_library' : IDL.Func([IDL.Nat, LibraryID], [IDL.Bool], []),
     'assign' : IDL.Func([IDL.Nat, Account__2], [IDL.Nat], []),
-    'change_library' : IDL.Func([LibraryID, IDL.Nat32], [], ['oneway']),
+    'butn_nft' : IDL.Func([BurnNFTRequest], [BurnNFTBatchResponse], []),
+    'change_library' : IDL.Func(
+        [Account__2, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
+        [],
+        ['oneway'],
+      ),
     'create_library' : IDL.Func([Library], [LibraryID], []),
     'get_libraries' : IDL.Func(
         [IDL.Vec(LibraryID)],
@@ -594,9 +599,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'icrc7_tx_window' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
-    'icrcX_burn' : IDL.Func([BurnNFTRequest], [BurnNFTBatchResponse], []),
-    'icrcX_mint' : IDL.Func([SetNFTRequest], [IDL.Vec(SetNFTResult)], []),
     'init' : IDL.Func([], [], []),
+    'mint_nft' : IDL.Func([SetNFTRequest], [IDL.Vec(SetNFTResult)], []),
   });
   return Example;
 };

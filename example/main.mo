@@ -74,26 +74,28 @@ shared(_init_msg) actor class Example(_args : {
 
   // Data types for Management
 
-  public type NFTMetadata = {
-    audio: Text;
-    duration: Nat;
-    audio_type: Text;
-    gengre: Text;
-    creator: Text; // Optional - name of the creator
-    description: Text; // Optional
-    library_id: Nat32; // Optional
-  };
+  /*
+    public type NFTMetadata = {
+      audio: Text;
+      duration: Nat;
+      audio_type: Text;
+      gengre: Text;
+      creator: Text; // Optional - name of the creator
+      description: Text; // Optional
+      library_id: Nat32; // Optional
+    };
 
-  public type SetNFTRequest = [SetNFTItemRequest];
+    public type SetNFTRequest = [SetNFTItemRequest];
 
-  public type SetNFTItemRequest = {
-    token_id: Nat;
-    metadata: NFTMetadata;
-    owner: ?Account;
-    override: Bool;
-    memo: ?Blob;
-    created_at_time : ?Nat64;
-  };
+    public type SetNFTItemRequest = {
+      token_id: Nat;
+      metadata: NFTMetadata;
+      owner: ?Account;
+      override: Bool;
+      memo: ?Blob;
+      created_at_time : ?Nat64;
+    };
+  */
 
   public type LibraryID = Nat32;
   type LibraryIDS = Set.Set<LibraryID>;
