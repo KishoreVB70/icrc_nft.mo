@@ -22,6 +22,7 @@ icrc3-mo = "0.2.4"
 icrc37-mo = "0.4.2"
 icrc7-mo = "0.4.1"
 map = "9.0.1"
+uuid = "1.0.0"
 
 [dev-dependencies]
 test = "2.0.0"
