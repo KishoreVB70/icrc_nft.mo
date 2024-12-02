@@ -60,8 +60,8 @@ export const idlFactory = ({ IDL }) => {
       'symbol' : IDL.Opt(IDL.Text),
     })
   );
-  const LibraryID = IDL.Nat32;
-  const Account__2 = IDL.Record({
+  const LibraryID = IDL.Nat;
+  const Account__1 = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
@@ -97,9 +97,16 @@ export const idlFactory = ({ IDL }) => {
     'Err' : BurnNFTBatchError,
   });
   List.fill(IDL.Opt(IDL.Tuple(IDL.Nat, List)));
+  const CreateLibraryRequest = IDL.Record({
+    'thumbnail' : IDL.Text,
+    'owner' : Account__1,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'nft_ids' : List,
+  });
   const Library = IDL.Record({
     'thumbnail' : IDL.Text,
-    'owner' : Account__2,
+    'owner' : Account__1,
     'name' : IDL.Text,
     'description' : IDL.Text,
     'nft_ids' : List,
@@ -318,11 +325,11 @@ export const idlFactory = ({ IDL }) => {
     'url' : IDL.Text,
     'block_type' : IDL.Text,
   });
-  const Account__1 = IDL.Record({
+  const Account__2 = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
-  const BalanceOfRequest = IDL.Vec(Account__1);
+  const BalanceOfRequest = IDL.Vec(Account__2);
   const BalanceOfResponse = IDL.Vec(IDL.Nat);
   Value__1.fill(
     IDL.Variant({
@@ -343,9 +350,9 @@ export const idlFactory = ({ IDL }) => {
     'Array' : IDL.Vec(Value__1),
   });
   const OwnerOfRequest = IDL.Vec(IDL.Nat);
-  const OwnerOfResponse = IDL.Vec(IDL.Opt(Account__1));
+  const OwnerOfResponse = IDL.Vec(IDL.Opt(Account__2));
   const TransferArgs = IDL.Record({
-    'to' : Account__1,
+    'to' : Account__2,
     'token_id' : IDL.Nat,
     'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'from_subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -429,43 +436,17 @@ export const idlFactory = ({ IDL }) => {
     'ValueMap' : IDL.Vec(IDL.Tuple(CandyShared, CandyShared)),
     'Class' : IDL.Vec(PropertyShared),
   });
-  const SetNFTItemRequest = IDL.Record({
-    'token_id' : IDL.Nat,
-    'owner' : IDL.Opt(Account),
-    'metadata' : NFTInput,
-    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'override' : IDL.Bool,
-    'created_at_time' : IDL.Opt(IDL.Nat64),
-  });
-  const SetNFTRequest = IDL.Vec(SetNFTItemRequest);
-  const SetNFTError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'TokenExists' : IDL.Null,
-    'NonExistingTokenId' : IDL.Null,
-    'CreatedInFuture' : IDL.Record({ 'ledger_time' : IDL.Nat64 }),
-    'TooOld' : IDL.Null,
-  });
-  const SetNFTResult = IDL.Variant({
-    'Ok' : IDL.Opt(IDL.Nat),
-    'Err' : SetNFTError,
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-  });
   const Example = IDL.Service({
     'add_nft_to_library' : IDL.Func([IDL.Nat, LibraryID], [IDL.Bool], []),
-    'assign' : IDL.Func([IDL.Nat, Account__2], [IDL.Nat], []),
-    'butn_nft' : IDL.Func([BurnNFTRequest], [BurnNFTBatchResponse], []),
+    'assign' : IDL.Func([IDL.Nat, Account__1], [IDL.Nat], []),
+    'burn_nft' : IDL.Func([BurnNFTRequest], [BurnNFTBatchResponse], []),
     'change_library' : IDL.Func(
-        [Account__2, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
+        [Account__1, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
         [],
         ['oneway'],
       ),
-    'create_library' : IDL.Func([Library], [LibraryID], []),
+    'create_library' : IDL.Func([CreateLibraryRequest], [LibraryID], []),
+    'generate_uuid_nat' : IDL.Func([], [IDL.Nat], []),
     'get_libraries' : IDL.Func(
         [IDL.Vec(LibraryID)],
         [IDL.Vec(Library)],
@@ -475,7 +456,7 @@ export const idlFactory = ({ IDL }) => {
     'get_owner' : IDL.Func([], [IDL.Principal], ['query']),
     'get_tip' : IDL.Func([], [Tip], ['query']),
     'get_user_libraries' : IDL.Func(
-        [Account__2],
+        [Account__1],
         [IDL.Opt(IDL.Vec(LibraryID))],
         [],
       ),
@@ -495,7 +476,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'icrc37_get_collection_approvals' : IDL.Func(
-        [Account__2, IDL.Opt(CollectionApproval), IDL.Opt(IDL.Nat)],
+        [Account__1, IDL.Opt(CollectionApproval), IDL.Opt(IDL.Nat)],
         [IDL.Vec(CollectionApproval)],
         ['query'],
       ),
@@ -588,7 +569,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'icrc7_tokens_of' : IDL.Func(
-        [Account__2, IDL.Opt(IDL.Nat), IDL.Opt(IDL.Nat)],
+        [Account__1, IDL.Opt(IDL.Nat), IDL.Opt(IDL.Nat)],
         [IDL.Vec(IDL.Nat)],
         ['query'],
       ),
@@ -600,7 +581,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'icrc7_tx_window' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
     'init' : IDL.Func([], [], []),
-    'mint_nft' : IDL.Func([SetNFTRequest], [IDL.Vec(SetNFTResult)], []),
+    'mint_nft' : IDL.Func([IDL.Opt(Account__1), NFTInput], [IDL.Nat], []),
   });
   return Example;
 };

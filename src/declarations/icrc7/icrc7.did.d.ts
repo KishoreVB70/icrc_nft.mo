@@ -8,11 +8,11 @@ export interface Account {
 }
 export interface Account__1 {
   'owner' : Principal,
-  'subaccount' : [] | [Uint8Array | number[]],
+  'subaccount' : [] | [Subaccount],
 }
 export interface Account__2 {
   'owner' : Principal,
-  'subaccount' : [] | [Subaccount],
+  'subaccount' : [] | [Uint8Array | number[]],
 }
 export interface Account__3 {
   'owner' : Principal,
@@ -56,7 +56,7 @@ export interface ArchivedTransactionResponse {
   'args' : Array<TransactionRange__1>,
   'callback' : GetTransactionsFn,
 }
-export type BalanceOfRequest = Array<Account__1>;
+export type BalanceOfRequest = Array<Account__2>;
 export type BalanceOfResponse = Array<bigint>;
 export interface BlockType { 'url' : string, 'block_type' : string }
 export interface BlockType__1 { 'url' : string, 'block_type' : string }
@@ -116,27 +116,32 @@ export interface CollectionApproval {
   'expires_at' : [] | [bigint],
   'spender' : Account__3,
 }
+export interface CreateLibraryRequest {
+  'thumbnail' : string,
+  'owner' : Account__1,
+  'name' : string,
+  'description' : string,
+  'nft_ids' : List,
+}
 export interface DataCertificate {
   'certificate' : Uint8Array | number[],
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
   'add_nft_to_library' : ActorMethod<[bigint, LibraryID], boolean>,
-  'assign' : ActorMethod<[bigint, Account__2], bigint>,
-  'butn_nft' : ActorMethod<[BurnNFTRequest], BurnNFTBatchResponse>,
+  'assign' : ActorMethod<[bigint, Account__1], bigint>,
+  'burn_nft' : ActorMethod<[BurnNFTRequest], BurnNFTBatchResponse>,
   'change_library' : ActorMethod<
-    [Account__2, [] | [LibraryID], LibraryID, bigint],
+    [Account__1, [] | [LibraryID], LibraryID, bigint],
     undefined
   >,
-  'create_library' : ActorMethod<[Library], LibraryID>,
-  'get_libraries' : ActorMethod<[Uint32Array | number[]], Array<Library>>,
+  'create_library' : ActorMethod<[CreateLibraryRequest], LibraryID>,
+  'generate_uuid_nat' : ActorMethod<[], bigint>,
+  'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
   'get_library' : ActorMethod<[LibraryID], [] | [Library]>,
   'get_owner' : ActorMethod<[], Principal>,
   'get_tip' : ActorMethod<[], Tip>,
-  'get_user_libraries' : ActorMethod<
-    [Account__2],
-    [] | [Uint32Array | number[]]
-  >,
+  'get_user_libraries' : ActorMethod<[Account__1], [] | [Array<LibraryID>]>,
   'icrc10_supported_standards' : ActorMethod<[], SupportedStandards__1>,
   'icrc37_approve_collection' : ActorMethod<
     [Array<ApproveCollectionArg>],
@@ -147,7 +152,7 @@ export interface Example {
     Array<[] | [ApproveTokenResult]>
   >,
   'icrc37_get_collection_approvals' : ActorMethod<
-    [Account__2, [] | [CollectionApproval], [] | [bigint]],
+    [Account__1, [] | [CollectionApproval], [] | [bigint]],
     Array<CollectionApproval>
   >,
   'icrc37_get_token_approvals' : ActorMethod<
@@ -200,7 +205,7 @@ export interface Example {
   >,
   'icrc7_tokens' : ActorMethod<[[] | [bigint], [] | [bigint]], Array<bigint>>,
   'icrc7_tokens_of' : ActorMethod<
-    [Account__2, [] | [bigint], [] | [bigint]],
+    [Account__1, [] | [bigint], [] | [bigint]],
     Array<bigint>
   >,
   'icrc7_total_supply' : ActorMethod<[], bigint>,
@@ -210,7 +215,7 @@ export interface Example {
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
   'init' : ActorMethod<[], undefined>,
-  'mint_nft' : ActorMethod<[SetNFTRequest], Array<SetNFTResult>>,
+  'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], bigint>,
 }
 export interface GetArchivesArgs { 'from' : [] | [Principal] }
 export type GetArchivesResult = Array<GetArchivesResultItem>;
@@ -285,13 +290,13 @@ export interface IsApprovedArg {
 }
 export interface Library {
   'thumbnail' : string,
-  'owner' : Account__2,
+  'owner' : Account__1,
   'name' : string,
   'description' : string,
   'nft_ids' : List,
   'library_id' : LibraryID,
 }
-export type LibraryID = number;
+export type LibraryID = bigint;
 export type List = [] | [[bigint, List]];
 export type NFTInput = { 'Int' : bigint } |
   { 'Map' : Array<[string, CandyShared]> } |
@@ -319,7 +324,7 @@ export type NFTInput = { 'Int' : bigint } |
   { 'ValueMap' : Array<[CandyShared, CandyShared]> } |
   { 'Class' : Array<PropertyShared> };
 export type OwnerOfRequest = Array<bigint>;
-export type OwnerOfResponse = Array<[] | [Account__1]>;
+export type OwnerOfResponse = Array<[] | [Account__2]>;
 export interface PropertyShared {
   'value' : CandyShared,
   'name' : string,
@@ -361,25 +366,6 @@ export type RevokeTokenApprovalError = {
   { 'TooOld' : null };
 export type RevokeTokenApprovalResult = { 'Ok' : bigint } |
   { 'Err' : RevokeTokenApprovalError };
-export type SetNFTError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'TokenExists' : null } |
-  { 'NonExistingTokenId' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'TooOld' : null };
-export interface SetNFTItemRequest {
-  'token_id' : bigint,
-  'owner' : [] | [Account],
-  'metadata' : NFTInput,
-  'memo' : [] | [Uint8Array | number[]],
-  'override' : boolean,
-  'created_at_time' : [] | [bigint],
-}
-export type SetNFTRequest = Array<SetNFTItemRequest>;
-export type SetNFTResult = { 'Ok' : [] | [bigint] } |
-  { 'Err' : SetNFTError } |
-  { 'GenericError' : { 'message' : string, 'error_code' : bigint } };
 export type Subaccount = Uint8Array | number[];
 export type Subaccount__1 = Uint8Array | number[];
 export type SupportedStandards = Array<{ 'url' : string, 'name' : string }>;
@@ -396,7 +382,7 @@ export interface TokenApproval {
 export interface TransactionRange { 'start' : bigint, 'length' : bigint }
 export interface TransactionRange__1 { 'start' : bigint, 'length' : bigint }
 export interface TransferArgs {
-  'to' : Account__1,
+  'to' : Account__2,
   'token_id' : bigint,
   'memo' : [] | [Uint8Array | number[]],
   'from_subaccount' : [] | [Uint8Array | number[]],

@@ -92,7 +92,7 @@ type TransferArgs =
    created_at_time: opt nat64;
    from_subaccount: opt blob;
    memo: opt blob;
-   to: Account__1;
+   to: Account__2;
    token_id: nat;
  };
 type TransactionRange__1 = 
@@ -128,36 +128,6 @@ type SupportedStandards =
      };
 type Subaccount__1 = blob;
 type Subaccount = blob;
-type SetNFTResult = 
- variant {
-   Err: SetNFTError;
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   Ok: opt nat;
- };
-type SetNFTRequest = vec SetNFTItemRequest;
-type SetNFTItemRequest = 
- record {
-   created_at_time: opt nat64;
-   memo: opt blob;
-   metadata: NFTInput;
-   override: bool;
-   owner: opt Account;
-   token_id: nat;
- };
-type SetNFTError = 
- variant {
-   CreatedInFuture: record {ledger_time: nat64;};
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   NonExistingTokenId;
-   TokenExists;
-   TooOld;
- };
 type RevokeTokenApprovalResult = 
  variant {
    Err: RevokeTokenApprovalError;
@@ -222,7 +192,7 @@ type PropertyShared =
    name: text;
    value: CandyShared;
  };
-type OwnerOfResponse = vec opt Account__1;
+type OwnerOfResponse = vec opt Account__2;
 type OwnerOfRequest = vec nat;
 type NFTInput = 
  variant {
@@ -263,14 +233,14 @@ type List =
        nat;
        List;
      };
-type LibraryID = nat32;
+type LibraryID = nat;
 type Library = 
  record {
    description: text;
    library_id: LibraryID;
    name: text;
    nft_ids: List;
-   owner: Account__2;
+   owner: Account__1;
    thumbnail: text;
  };
 type IsApprovedArg = 
@@ -359,21 +329,22 @@ type GetArchivesArgs = record {from: opt principal;};
 type Example = 
  service {
    add_nft_to_library: (nat, LibraryID) -> (bool);
-   assign: (nat, Account__2) -> (nat);
-   butn_nft: (BurnNFTRequest) -> (BurnNFTBatchResponse);
-   change_library: (Account__2, opt LibraryID, LibraryID, nat) -> () oneway;
-   create_library: (Library) -> (LibraryID);
+   assign: (nat, Account__1) -> (nat);
+   burn_nft: (BurnNFTRequest) -> (BurnNFTBatchResponse);
+   change_library: (Account__1, opt LibraryID, LibraryID, nat) -> () oneway;
+   create_library: (CreateLibraryRequest) -> (LibraryID);
+   generate_uuid_nat: () -> (nat);
    get_libraries: (vec LibraryID) -> (vec Library) query;
    get_library: (LibraryID) -> (opt Library) query;
    get_owner: () -> (principal) query;
    get_tip: () -> (Tip) query;
-   get_user_libraries: (Account__2) -> (opt vec LibraryID);
+   get_user_libraries: (Account__1) -> (opt vec LibraryID);
    icrc10_supported_standards: () -> (SupportedStandards__1) query;
    icrc37_approve_collection: (vec ApproveCollectionArg) ->
     (vec opt ApproveCollectionResult);
    icrc37_approve_tokens: (vec ApproveTokenArg) ->
     (vec opt ApproveTokenResult);
-   icrc37_get_collection_approvals: (Account__2, opt CollectionApproval,
+   icrc37_get_collection_approvals: (Account__1, opt CollectionApproval,
     opt nat) -> (vec CollectionApproval) query;
    icrc37_get_token_approvals: (vec nat, opt TokenApproval, opt nat) ->
     (vec TokenApproval) query;
@@ -414,17 +385,25 @@ type Example =
                    Value;
                  }) query;
    icrc7_tokens: (opt nat, opt nat) -> (vec nat) query;
-   icrc7_tokens_of: (Account__2, opt nat, opt nat) -> (vec nat) query;
+   icrc7_tokens_of: (Account__1, opt nat, opt nat) -> (vec nat) query;
    icrc7_total_supply: () -> (nat) query;
    icrc7_transfer: (vec TransferArgs) -> (vec opt TransferResult);
    icrc7_tx_window: () -> (opt nat) query;
    init: () -> ();
-   mint_nft: (SetNFTRequest) -> (vec SetNFTResult);
+   mint_nft: (opt Account__1, NFTInput) -> (nat);
  };
 type DataCertificate = 
  record {
    certificate: blob;
    hash_tree: blob;
+ };
+type CreateLibraryRequest = 
+ record {
+   description: text;
+   name: text;
+   nft_ids: List;
+   owner: Account__1;
+   thumbnail: text;
  };
 type CollectionApproval = 
  record {
@@ -519,7 +498,7 @@ type BlockType =
    url: text;
  };
 type BalanceOfResponse = vec nat;
-type BalanceOfRequest = vec Account__1;
+type BalanceOfRequest = vec Account__2;
 type ArchivedTransactionResponse = 
  record {
    args: vec TransactionRange__1;
@@ -589,12 +568,12 @@ type Account__3 =
 type Account__2 = 
  record {
    owner: principal;
-   subaccount: opt Subaccount;
+   subaccount: opt blob;
  };
 type Account__1 = 
  record {
    owner: principal;
-   subaccount: opt blob;
+   subaccount: opt Subaccount;
  };
 type Account = 
  record {

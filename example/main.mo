@@ -386,7 +386,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // SetNFTRequest is an array of SetNFTItemRequests
   // SetNFTItemRequests has type for metadata which is candyshared
-  public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async [ICRC7.SetNFTResult] {
+  public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async Nat {
 
     // 1) Generate UUID
     let uuid: Nat = await generate_uuid_nat();
@@ -410,7 +410,8 @@ shared(_init_msg) actor class Example(_args : {
 
     // Way 2) Updating the library after the call
     switch(icrc7().set_nfts<system>(msg.caller, [req], true)){
-      case(#ok(val)) {
+      // The value is just the transaction id, not required
+      case(#ok(_val)) {
         /*
           for (result in val.vals()) {
 
@@ -455,7 +456,7 @@ shared(_init_msg) actor class Example(_args : {
             };
           };
         */
-        return val;
+        return uuid;
       };
       case(#err(err)) D.trap(err);
     };
@@ -953,8 +954,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   public query func get_owner(): async Principal {
-    let bot = icrc7().get_state().owner;
-    return bot;
+    icrc7().get_state().owner
   }
 
 };
