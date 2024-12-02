@@ -126,7 +126,6 @@ shared(_init_msg) actor class Example(_args : {
     description: Text;
     thumbnail: Text;
     owner: Account;
-    nft_ids: List.List<Nat>;
   };
 
   // public type Update = {
@@ -176,6 +175,7 @@ shared(_init_msg) actor class Example(_args : {
 
     // UUID
     let uuid = await generate_uuid_nat();
+    let nft_ids = List.nil<Nat>();
 
     let library: Library = {
       description = libreq.description;
@@ -183,7 +183,7 @@ shared(_init_msg) actor class Example(_args : {
       name = libreq.name;
       owner = libreq.owner;
       thumbnail = libreq.thumbnail;
-      nft_ids = libreq.nft_ids;
+      nft_ids = nft_ids;
     };
   
     // 1) Create the library
