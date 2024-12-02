@@ -170,9 +170,21 @@ shared(_init_msg) actor class Example(_args : {
 // Library related functions
 
   // Create a library
-  public func create_library(library: Library): async LibraryID {
+  public func create_library(libreq: CreateLibraryRequest): async LibraryID {
     // Only the admin can create a library
     // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+
+    // UUID
+    let uuid = await generate_uuid_nat();
+
+    let library: Library = {
+      description = libreq.description;
+      library_id = uuid;
+      name = libreq.name;
+      owner = libreq.owner;
+      thumbnail = libreq.thumbnail;
+      nft_ids = libreq.nft_ids;
+    };
   
     // 1) Create the library
     Map.set(libraries, nhash, library.library_id , library);
