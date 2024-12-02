@@ -503,6 +503,8 @@ shared(_init_msg) actor class Example(_args : {
       };
   };
 
+  // Function to generate unique id
+  // Warn: public for testing, Todo - change to private for production
   public func generate_uuid_nat(): async Nat {
     let g = Source.Source();
     let val = await g.new();
