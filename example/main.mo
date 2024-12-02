@@ -118,7 +118,7 @@ shared(_init_msg) actor class Example(_args : {
     description: Text;
     thumbnail: Text;
     owner: Account;
-    nft_ids: List.List<Nat>;
+    nft_ids: [Nat];
   };
 
   public type CreateLibraryRequest = {
@@ -175,7 +175,8 @@ shared(_init_msg) actor class Example(_args : {
 
     // UUID
     let uuid = await generate_uuid_nat();
-    let nft_ids = List.nil<Nat>();
+    // let nft_ids = List.nil<Nat>();
+    let nft_ids = [];
 
     let library: Library = {
       description = libreq.description;
@@ -183,7 +184,7 @@ shared(_init_msg) actor class Example(_args : {
       name = libreq.name;
       owner = libreq.owner;
       thumbnail = libreq.thumbnail;
-      nft_ids = nft_ids;
+      nft_ids = [];
     };
   
     // 1) Create the library
@@ -272,15 +273,17 @@ shared(_init_msg) actor class Example(_args : {
             // Remove item
             // Warn: O(N) operation
             // Couldn't implement a hash set due to stable memory limitation
-            let new_list = List.filter<Nat>(val.nft_ids, func(item: Nat): Bool{
-              item != nft_id
-            });
+            // let new_list = List.filter<Nat>(val.nft_ids, func(item: Nat): Bool{
+            //   item != nft_id
+            // });
+
+            let arr: [Nat] = Array.filter<Nat>(val.nft_ids, func x = x!= nft_id);
 
             let updated_lib: Library = {
               description = val.description;
               library_id = val.library_id;
               name = val.name;
-              nft_ids = new_list;
+              nft_ids = arr;
               owner = val.owner;
               thumbnail = val.thumbnail;
             };
@@ -299,14 +302,17 @@ shared(_init_msg) actor class Example(_args : {
     switch lib_to {
       case (?val) {
         // Add item
-        // O(1) operation
-        let new_list = List.push(nft_id, val.nft_ids);
+        // Warn: O(n) operation, could not implement better data structure due to stable
+        // structure limitation
+        // let new_list = List.push(nft_id, val.nft_ids);
+        let buffer = Buffer.fromArray<Nat>(val.nft_ids);
+        buffer.add(nft_id);
 
         let updated_lib: Library = {
           description = val.description;
           library_id = val.library_id;
           name = val.name;
-          nft_ids = new_list;
+          nft_ids = Buffer.toArray(buffer);
           owner = val.owner;
           thumbnail = val.thumbnail;
         };
@@ -351,13 +357,14 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Add nft id to library
-  public func add_nft_to_library(nft_id: Nat, library_id: LibraryID): async Bool {
+  /*
+    public func add_nft_to_library(nft_id: Nat, library_id: LibraryID): async Bool {
     // Get the library
     let lib: ?Library = Map.get(libraries, nhash, library_id);
 
     switch lib {
       case(?val) {
-        let new_list = List.push(nft_id, val.nft_ids);
+        // let new_list = List.push(nft_id, val.nft_ids);
 
         let updated_lib: Library = {
           description = val.description;
@@ -376,6 +383,7 @@ shared(_init_msg) actor class Example(_args : {
       };
     };
   };
+  */
 
 
 

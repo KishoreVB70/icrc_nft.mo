@@ -228,18 +228,13 @@ type NFTInput =
                    CandyShared;
                  };
  };
-type List = 
- opt record {
-       nat;
-       List;
-     };
 type LibraryID = nat;
 type Library = 
  record {
    description: text;
    library_id: LibraryID;
    name: text;
-   nft_ids: List;
+   nft_ids: vec nat;
    owner: Account__1;
    thumbnail: text;
  };
@@ -328,7 +323,6 @@ type GetArchivesResult = vec GetArchivesResultItem;
 type GetArchivesArgs = record {from: opt principal;};
 type Example = 
  service {
-   add_nft_to_library: (nat, LibraryID) -> (bool);
    assign: (nat, Account__1) -> (nat);
    burn_nft: (BurnNFTRequest) -> (BurnNFTBatchResponse);
    change_library: (Account__1, opt LibraryID, LibraryID, nat) -> () oneway;

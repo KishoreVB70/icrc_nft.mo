@@ -1,7 +1,6 @@
 export const idlFactory = ({ IDL }) => {
   const ArchivedTransactionResponse = IDL.Rec();
   const CandyShared = IDL.Rec();
-  const List = IDL.Rec();
   const Value__1 = IDL.Rec();
   const Value__2 = IDL.Rec();
   const IndexType = IDL.Variant({
@@ -60,7 +59,6 @@ export const idlFactory = ({ IDL }) => {
       'symbol' : IDL.Opt(IDL.Text),
     })
   );
-  const LibraryID = IDL.Nat;
   const Account__1 = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
@@ -96,19 +94,19 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(BurnNFTItemResponse),
     'Err' : BurnNFTBatchError,
   });
+  const LibraryID = IDL.Nat;
   const CreateLibraryRequest = IDL.Record({
     'thumbnail' : IDL.Text,
     'owner' : Account__1,
     'name' : IDL.Text,
     'description' : IDL.Text,
   });
-  List.fill(IDL.Opt(IDL.Tuple(IDL.Nat, List)));
   const Library = IDL.Record({
     'thumbnail' : IDL.Text,
     'owner' : Account__1,
     'name' : IDL.Text,
     'description' : IDL.Text,
-    'nft_ids' : List,
+    'nft_ids' : IDL.Vec(IDL.Nat),
     'library_id' : LibraryID,
   });
   const Tip = IDL.Record({
@@ -436,7 +434,6 @@ export const idlFactory = ({ IDL }) => {
     'Class' : IDL.Vec(PropertyShared),
   });
   const Example = IDL.Service({
-    'add_nft_to_library' : IDL.Func([IDL.Nat, LibraryID], [IDL.Bool], []),
     'assign' : IDL.Func([IDL.Nat, Account__1], [IDL.Nat], []),
     'burn_nft' : IDL.Func([BurnNFTRequest], [BurnNFTBatchResponse], []),
     'change_library' : IDL.Func(

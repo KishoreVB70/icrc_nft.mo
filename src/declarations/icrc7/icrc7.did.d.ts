@@ -127,7 +127,6 @@ export interface DataCertificate {
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'add_nft_to_library' : ActorMethod<[bigint, LibraryID], boolean>,
   'assign' : ActorMethod<[bigint, Account__1], bigint>,
   'burn_nft' : ActorMethod<[BurnNFTRequest], BurnNFTBatchResponse>,
   'change_library' : ActorMethod<
@@ -292,11 +291,10 @@ export interface Library {
   'owner' : Account__1,
   'name' : string,
   'description' : string,
-  'nft_ids' : List,
+  'nft_ids' : Array<bigint>,
   'library_id' : LibraryID,
 }
 export type LibraryID = bigint;
-export type List = [] | [[bigint, List]];
 export type NFTInput = { 'Int' : bigint } |
   { 'Map' : Array<[string, CandyShared]> } |
   { 'Nat' : bigint } |
