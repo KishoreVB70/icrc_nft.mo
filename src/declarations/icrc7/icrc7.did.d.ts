@@ -121,7 +121,6 @@ export interface CreateLibraryRequest {
   'owner' : Account__1,
   'name' : string,
   'description' : string,
-  'nft_ids' : List,
 }
 export interface DataCertificate {
   'certificate' : Uint8Array | number[],

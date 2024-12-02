@@ -401,7 +401,6 @@ type CreateLibraryRequest =
  record {
    description: text;
    name: text;
-   nft_ids: List;
    owner: Account__1;
    thumbnail: text;
  };

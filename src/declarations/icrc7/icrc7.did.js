@@ -96,14 +96,13 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(BurnNFTItemResponse),
     'Err' : BurnNFTBatchError,
   });
-  List.fill(IDL.Opt(IDL.Tuple(IDL.Nat, List)));
   const CreateLibraryRequest = IDL.Record({
     'thumbnail' : IDL.Text,
     'owner' : Account__1,
     'name' : IDL.Text,
     'description' : IDL.Text,
-    'nft_ids' : List,
   });
+  List.fill(IDL.Opt(IDL.Tuple(IDL.Nat, List)));
   const Library = IDL.Record({
     'thumbnail' : IDL.Text,
     'owner' : Account__1,
