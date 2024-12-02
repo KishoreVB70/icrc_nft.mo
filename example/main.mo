@@ -31,6 +31,13 @@ import ICRC7Default "./initial_state/icrc7";
 import ICRC37Default "./initial_state/icrc37";
 import ICRC3Default "./initial_state/icrc3";
 
+// UUID
+import Source "mo:uuid/async/SourceV4";
+import UUID "mo:uuid/UUID";
+import Nat8 "mo:base/Nat8";
+
+
+
 
 // _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Example(_args : {
@@ -45,6 +52,10 @@ shared(_init_msg) actor class Example(_args : {
   type NFT =                              ICRC7.NFT;
   type NFTShared =                        ICRC7.NFTShared;
   type NFTMap =                           ICRC7.NFTMap;
+  type SetNFTRequest = ICRC7.SetNFTRequest;
+  type SetNFTItemRequest = ICRC7.SetNFTItemRequest;
+  type NFTInput = ICRC7.NFTInput;
+
   type OwnerOfResponse =                    ICRC7.Service.OwnerOfResponse;
   type OwnerOfRequest =                    ICRC7.Service.OwnerOfRequest;
   type TransferArgs =                     ICRC7.Service.TransferArg;
@@ -354,7 +365,21 @@ shared(_init_msg) actor class Example(_args : {
 
   // SetNFTRequest is an array of SetNFTItemRequests
   // SetNFTItemRequests has type for metadata which is candyshared
-  public shared(msg) func mint_nft(tokens: ICRC7.SetNFTRequest) : async [ICRC7.SetNFTResult] {
+  public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async [ICRC7.SetNFTResult] {
+
+    // 1) Generate UUID
+    let uuid: Nat = await generate_uuid_nat();
+
+    let req: SetNFTItemRequest = {
+      token_id= uuid;
+      owner= owner;
+      metadata = metadata;
+      created_at_time = null;
+      memo = null;
+      override = true;
+    };
+
+    // 2) Add that into the metadata
 
     // Official function provided by ICRC-7 to mint an NFT
     // Must be careful as calling set_nfts on existing token will replace it with new metadata
@@ -363,7 +388,7 @@ shared(_init_msg) actor class Example(_args : {
     // Way 1) Updating the library before the call
 
     // Way 2) Updating the library after the call
-    switch(icrc7().set_nfts<system>(msg.caller, tokens, true)){
+    switch(icrc7().set_nfts<system>(msg.caller, [req], true)){
       case(#ok(val)) {
         /*
           for (result in val.vals()) {
@@ -446,7 +471,7 @@ shared(_init_msg) actor class Example(_args : {
           };
   */
 
-  public shared(msg) func butn_nft(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
+  public shared(msg) func burn_nft(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
       switch(icrc7().burn_nfts<system>(msg.caller, tokens)){
         case(#ok(val)) {
           // 1) Remove NFT from user profile
@@ -456,6 +481,16 @@ shared(_init_msg) actor class Example(_args : {
         case(#err(err)) D.trap(err);
       };
   };
+
+  public func generate_uuid_nat(): async Nat {
+    let g = Source.Source();
+    let val = await g.new();
+    var result : Nat = 0;
+    for (byte in val.vals()) {
+      result := result * 256 + Nat8.toNat(byte);
+    };
+    result
+  };  
 
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(
