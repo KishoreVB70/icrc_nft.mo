@@ -36,6 +36,7 @@ import ICRC3Default "./initial_state/icrc3";
 import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
 import Nat8 "mo:base/Nat8";
+import Text "mo:base/Text";
 
 
 
@@ -233,30 +234,37 @@ shared(_init_msg) actor class Example(_args : {
 
   // Change library or assign a  library 
   // Have to improve the API -> Has to return something
-  public shared(msg) func change_library(owner: Account, library_id_from: ?LibraryID, library_id_to: LibraryID, nft_id: Nat): async Bool {
+  public shared(msg) func change_library(
+    owner: Account, library_id_from: ?LibraryID,
+    library_id_to: LibraryID, nft_id: Nat
+  ): async Result.Result<Bool,Text> {
     // Checks
 
-    // 1) Account must be the owner of the NFT
+    // 1) Caller must be the admin of the NFT collection
+    let admin = icrc7().get_state().owner;
+    if (admin != msg.caller) return #err("Unauthorized caller");
+
+    // 2) Account must be the owner of the NFT
     switch( icrc7().get_token_owner_canonical(nft_id) ){
       case(#ok(val)) {
         let acc = val;
         if (owner != acc) {
-          return false;
+          return #err("Unauthorized token owner");
         }
       };
-      case _ return false;
+      case _ return #err("Invalid Tokenid");
     };
 
-    // 2) Account must be the owner of the library two
+    // 3) Account must be the owner of the library two
     let lib_quer: ?Library = Map.get(libraries, nhash, library_id_to);
     switch lib_quer {
       case(?val) {
         if (val.owner != owner) {
-          return false;
+          return #err("Unauthorized library to");
         };
       };
       case(null) {
-        return false;
+        return #err("Invalid library to");
       };
     };
 
@@ -338,8 +346,11 @@ shared(_init_msg) actor class Example(_args : {
       }
     ];
 
-    let _result = icrc7().update_nfts<system>(msg.caller, update_request);
-    return true;
+    let result = icrc7().update_nfts<system>(msg.caller, update_request);
+    switch (result) {
+      case (#ok(_val)) return #ok(true);
+      case (#err(error)) return #err(error);
+    };
   };
 
   // Get list of library ids of of users
@@ -507,7 +518,7 @@ shared(_init_msg) actor class Example(_args : {
       memo = null;
       created_at_time = null;
     };
-    
+
     // 1) Obtain the library id of the nft to clear it after success
     /*
       let metadatas = icrc7().token_metadata(tokens);
