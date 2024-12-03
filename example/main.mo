@@ -32,7 +32,6 @@ import ICRC3Default "./initial_state/icrc3";
 
 // UUID
 import Source "mo:uuid/async/SourceV4";
-import UUID "mo:uuid/UUID";
 import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
 
@@ -561,7 +560,8 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Function to generate unique id
-  // Warn: public for testing, Todo - change to private for production
+  // Warn: public for testing
+  // Todo - change to private for production
   public func generate_uuid_nat(): async Nat {
     let g = Source.Source();
     let val = await g.new();
@@ -635,7 +635,7 @@ shared(_init_msg) actor class Example(_args : {
     return cert_store;
   };
 
-  private func updated_certification(cert: Blob, lastIndex: Nat) : Bool{
+  private func updated_certification(_cert: Blob, _lastIndex: Nat) : Bool{
 
     D.print("updating the certification " # debug_show(CertifiedData.getCertificate(), ct.treeHash()));
     ct.setCertifiedData();
@@ -991,7 +991,7 @@ shared(_init_msg) actor class Example(_args : {
   // Init function to approve entire collection to the deployer
   // Useful for management and updation of metadata, leads to centralization
   private stable var _init = false;
-  public shared(msg) func init() : async () {
+  public shared(_msg) func init() : async () {
     //can only be called once
 
     //Warning:  This is a test scenario and should not be used in production.  This creates an approval for the owner of the canister and this can be garbage collected if the max_approvals is hit.  We advise minting with the target owner in the metadata or creating an assign function (see assign)
