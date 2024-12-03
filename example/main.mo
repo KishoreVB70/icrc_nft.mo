@@ -507,14 +507,50 @@ shared(_init_msg) actor class Example(_args : {
       memo = null;
       created_at_time = null;
     };
+    
+    // 1) Obtain the library id of the nft to clear it after success
+    /*
+      let metadatas = icrc7().token_metadata(tokens);
+      let metadata = metadatas[0];
+      var lib_id = 0;
+      switch(metadata) {
+        case(?val) {  
+          // This operation depends on the structure of the metadata
+          for ((k, v) in val.vals()) {
+            if (k == "library_id") {
+                lib_id := ?v;
+            }
+          };
+        };
+        case(null) { };
+      };
+    */
 
     switch(icrc7().burn_nfts<system>(msg.caller, burnrequest)){
       case(#ok(val)) {
-        // 1) Remove NFT from library
+
         return val;
       };
       case(#err(err)) D.trap(err);
     };
+    /*
+      // Iterate over the list of BurnNFTItemResponse
+      for (response in burnResponses) {
+        switch (response.result) {
+          case (#Ok(tokenId)) {
+            // Access the token_id
+            let nftId = response.token_id;
+            // Process the token_id as needed
+          };
+          case (#Err(burnError)) {
+            // Handle the burn error as needed
+          };
+        };
+      };
+      case (#Err(batchError)) {
+        // Handle the batch error as needed
+      };
+    */
   };
 
   // Function to generate unique id
