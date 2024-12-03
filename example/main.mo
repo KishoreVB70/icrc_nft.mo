@@ -10,7 +10,6 @@ import Set "mo:map/Set";
 // import { n32hash } "mo:map/Map";
 import { nhash } "mo:map/Map";
 import Result "mo:base/Result";
-
 import Vec "mo:vector";
 
 
@@ -34,6 +33,7 @@ import ICRC3Default "./initial_state/icrc3";
 import Source "mo:uuid/async/SourceV4";
 import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
+import List "mo:base/List";
 
 
 
@@ -300,7 +300,23 @@ shared(_init_msg) actor class Example(_args : {
           case (null) {};
         };
       };
-      case (null) {};
+      // If there is no from library, then the nft must not have a field called library_id
+      case (null) {
+        let metadatas = icrc7().token_metadata([nft_id]);
+        let metadata = metadatas[0];
+        let hasLibraryId: Bool = switch (metadata) {
+          case null { false };
+          case (?map) {
+            switch (Array.find(map, func((key, _): (Text, Value)): Bool {
+              key == "library_id"
+            })) {
+              case null { false };
+              case (?_) { true };
+            }
+          };
+        };
+        if (hasLibraryId) return #err("library id exists")
+      };
     };
 
 
@@ -352,6 +368,9 @@ shared(_init_msg) actor class Example(_args : {
       case (#err(error)) return #err(error);
     };
   };
+
+
+  
 
   // Get list of library ids of of users
   public func get_user_libraries(user: Account): async ?[LibraryID] {
@@ -513,6 +532,8 @@ shared(_init_msg) actor class Example(_args : {
       memo = null;
       created_at_time = null;
     };
+
+    // Check if the account is the owner of the tokens
 
     // 1) Obtain the library id of the nft to clear it after success
     /*

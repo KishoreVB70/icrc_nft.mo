@@ -186,6 +186,16 @@ type RevokeCollectionApprovalArg =
    memo: opt blob;
    spender: opt Account__3;
  };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: bool;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: nat;
+ };
 type PropertyShared = 
  record {
    immutable: bool;
@@ -324,9 +334,9 @@ type GetArchivesArgs = record {from: opt principal;};
 type Example = 
  service {
    assign: (nat, Account__1) -> (nat);
-   burn_nft: (BurnNFTRequest) -> (BurnNFTBatchResponse);
-   change_library: (Account__1, opt LibraryID, LibraryID, nat) -> () oneway;
-   create_library: (CreateLibraryRequest) -> (LibraryID);
+   burn_nft: (vec nat) -> (Result_1);
+   change_library: (Account__1, opt LibraryID, LibraryID, nat) -> (Result_1);
+   create_library: (CreateLibraryRequest) -> (Result);
    generate_uuid_nat: () -> (nat);
    get_libraries: (vec LibraryID) -> (vec Library) query;
    get_library: (LibraryID) -> (opt Library) query;
@@ -384,7 +394,7 @@ type Example =
    icrc7_transfer: (vec TransferArgs) -> (vec opt TransferResult);
    icrc7_tx_window: () -> (opt nat) query;
    init: () -> ();
-   mint_nft: (opt Account__1, NFTInput) -> (nat);
+   mint_nft: (opt Account__1, NFTInput) -> (Result);
  };
 type DataCertificate = 
  record {
@@ -439,46 +449,6 @@ type CandyShared =
                    CandyShared;
                    CandyShared;
                  };
- };
-type BurnNFTResult = 
- variant {
-   Err: BurnNFTError;
-   Ok: nat;
- };
-type BurnNFTRequest = 
- record {
-   created_at_time: opt nat64;
-   memo: opt blob;
-   tokens: vec nat;
- };
-type BurnNFTItemResponse = 
- record {
-   result: BurnNFTResult;
-   token_id: nat;
- };
-type BurnNFTError = 
- variant {
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   InvalidBurn;
-   NonExistingTokenId;
- };
-type BurnNFTBatchResponse = 
- variant {
-   Err: BurnNFTBatchError;
-   Ok: vec BurnNFTItemResponse;
- };
-type BurnNFTBatchError = 
- variant {
-   CreatedInFuture: record {ledger_time: nat64;};
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   TooOld;
-   Unauthorized;
  };
 type BlockType__1 = 
  record {

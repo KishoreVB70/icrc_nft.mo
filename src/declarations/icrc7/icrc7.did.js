@@ -63,37 +63,7 @@ export const idlFactory = ({ IDL }) => {
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
-  const BurnNFTRequest = IDL.Record({
-    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'tokens' : IDL.Vec(IDL.Nat),
-    'created_at_time' : IDL.Opt(IDL.Nat64),
-  });
-  const BurnNFTError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'NonExistingTokenId' : IDL.Null,
-    'InvalidBurn' : IDL.Null,
-  });
-  const BurnNFTResult = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : BurnNFTError });
-  const BurnNFTItemResponse = IDL.Record({
-    'result' : BurnNFTResult,
-    'token_id' : IDL.Nat,
-  });
-  const BurnNFTBatchError = IDL.Variant({
-    'GenericError' : IDL.Record({
-      'message' : IDL.Text,
-      'error_code' : IDL.Nat,
-    }),
-    'Unauthorized' : IDL.Null,
-    'CreatedInFuture' : IDL.Record({ 'ledger_time' : IDL.Nat64 }),
-    'TooOld' : IDL.Null,
-  });
-  const BurnNFTBatchResponse = IDL.Variant({
-    'Ok' : IDL.Vec(BurnNFTItemResponse),
-    'Err' : BurnNFTBatchError,
-  });
+  const Result_1 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
   const LibraryID = IDL.Nat;
   const CreateLibraryRequest = IDL.Record({
     'thumbnail' : IDL.Text,
@@ -101,6 +71,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'description' : IDL.Text,
   });
+  const Result = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const Library = IDL.Record({
     'thumbnail' : IDL.Text,
     'owner' : Account__1,
@@ -435,13 +406,13 @@ export const idlFactory = ({ IDL }) => {
   });
   const Example = IDL.Service({
     'assign' : IDL.Func([IDL.Nat, Account__1], [IDL.Nat], []),
-    'burn_nft' : IDL.Func([BurnNFTRequest], [BurnNFTBatchResponse], []),
+    'burn_nft' : IDL.Func([IDL.Vec(IDL.Nat)], [Result_1], []),
     'change_library' : IDL.Func(
         [Account__1, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
+        [Result_1],
         [],
-        ['oneway'],
       ),
-    'create_library' : IDL.Func([CreateLibraryRequest], [LibraryID], []),
+    'create_library' : IDL.Func([CreateLibraryRequest], [Result], []),
     'generate_uuid_nat' : IDL.Func([], [IDL.Nat], []),
     'get_libraries' : IDL.Func(
         [IDL.Vec(LibraryID)],
@@ -577,7 +548,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'icrc7_tx_window' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
     'init' : IDL.Func([], [], []),
-    'mint_nft' : IDL.Func([IDL.Opt(Account__1), NFTInput], [IDL.Nat], []),
+    'mint_nft' : IDL.Func([IDL.Opt(Account__1), NFTInput], [Result], []),
   });
   return Example;
 };

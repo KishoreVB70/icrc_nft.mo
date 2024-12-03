@@ -60,30 +60,6 @@ export type BalanceOfRequest = Array<Account__2>;
 export type BalanceOfResponse = Array<bigint>;
 export interface BlockType { 'url' : string, 'block_type' : string }
 export interface BlockType__1 { 'url' : string, 'block_type' : string }
-export type BurnNFTBatchError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'Unauthorized' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'TooOld' : null };
-export type BurnNFTBatchResponse = { 'Ok' : Array<BurnNFTItemResponse> } |
-  { 'Err' : BurnNFTBatchError };
-export type BurnNFTError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'NonExistingTokenId' : null } |
-  { 'InvalidBurn' : null };
-export interface BurnNFTItemResponse {
-  'result' : BurnNFTResult,
-  'token_id' : bigint,
-}
-export interface BurnNFTRequest {
-  'memo' : [] | [Uint8Array | number[]],
-  'tokens' : Array<bigint>,
-  'created_at_time' : [] | [bigint],
-}
-export type BurnNFTResult = { 'Ok' : bigint } |
-  { 'Err' : BurnNFTError };
 export type CandyShared = { 'Int' : bigint } |
   { 'Map' : Array<[string, CandyShared]> } |
   { 'Nat' : bigint } |
@@ -128,12 +104,12 @@ export interface DataCertificate {
 }
 export interface Example {
   'assign' : ActorMethod<[bigint, Account__1], bigint>,
-  'burn_nft' : ActorMethod<[BurnNFTRequest], BurnNFTBatchResponse>,
+  'burn_nft' : ActorMethod<[Array<bigint>], Result_1>,
   'change_library' : ActorMethod<
     [Account__1, [] | [LibraryID], LibraryID, bigint],
-    undefined
+    Result_1
   >,
-  'create_library' : ActorMethod<[CreateLibraryRequest], LibraryID>,
+  'create_library' : ActorMethod<[CreateLibraryRequest], Result>,
   'generate_uuid_nat' : ActorMethod<[], bigint>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
   'get_library' : ActorMethod<[LibraryID], [] | [Library]>,
@@ -213,7 +189,7 @@ export interface Example {
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
   'init' : ActorMethod<[], undefined>,
-  'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], bigint>,
+  'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], Result>,
 }
 export interface GetArchivesArgs { 'from' : [] | [Principal] }
 export type GetArchivesResult = Array<GetArchivesResultItem>;
@@ -327,6 +303,10 @@ export interface PropertyShared {
   'name' : string,
   'immutable' : boolean,
 }
+export type Result = { 'ok' : bigint } |
+  { 'err' : string };
+export type Result_1 = { 'ok' : boolean } |
+  { 'err' : string };
 export interface RevokeCollectionApprovalArg {
   'memo' : [] | [Uint8Array | number[]],
   'from_subaccount' : [] | [Uint8Array | number[]],
