@@ -170,9 +170,9 @@ shared(_init_msg) actor class Example(_args : {
 // Library related functions
 
   // Create a library
-  public shared(msg) func create_library(libreq: CreateLibraryRequest): async LibraryID {
+  public shared(msg) func create_library(libreq: CreateLibraryRequest): async Result.Result<Nat, Text> {
     // Only the admin can create a library
-    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
 
     // UUID
     let uuid = await generate_uuid_nat();
@@ -208,7 +208,7 @@ shared(_init_msg) actor class Example(_args : {
       };
     };
 
-    return library.library_id;
+    return #ok(library.library_id);
   };
 
   // Get multiple Libraries
