@@ -507,7 +507,7 @@ shared(_init_msg) actor class Example(_args : {
 
   public shared(msg) func burn_nft(
     tokens: [Nat]
-  ) : async ICRC7.BurnNFTBatchResponse {
+  ) : async Result.Result<Bool, Text> {
     let burnrequest = {
       tokens = tokens;
       memo = null;
@@ -533,11 +533,10 @@ shared(_init_msg) actor class Example(_args : {
     */
 
     switch(icrc7().burn_nfts<system>(msg.caller, burnrequest)){
-      case(#ok(val)) {
-
-        return val;
+      case(#ok(_val)) {
+        return #ok(true);
       };
-      case(#err(err)) D.trap(err);
+      case(#err(err)) #err(err);
     };
     /*
       // Iterate over the list of BurnNFTItemResponse
