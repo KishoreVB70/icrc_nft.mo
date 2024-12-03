@@ -225,6 +225,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Get a single library
+  // Todo - Remove after assessing requirement
   public query func get_library(library_id: LibraryID): async ?Library {
     let result: ?Library = Map.get(libraries, nhash, library_id);
     return result;
@@ -394,15 +395,6 @@ shared(_init_msg) actor class Example(_args : {
   };
   */
 
-
-
-    /////////
-  // The following functions are not part of ICRC7 or ICRC37. They are provided as examples of how
-  // one might deploy an NFT.
-  /////////
-
-  // SetNFTRequest is an array of SetNFTItemRequests
-  // SetNFTItemRequests has type for metadata which is candyshared
   public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async Result.Result<Nat, Text> {
 
     // 1) Generate UUID
@@ -921,6 +913,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // System capabililties not provided to the functions, Why?
+  // Warn: Potential error and debugging point
   public shared(msg) func icrc7_transfer<system>(args: [TransferArgs]) : async [?TransferResult] {
       icrc7().transfer<system>(msg.caller, args);
   };
@@ -961,6 +954,10 @@ shared(_init_msg) actor class Example(_args : {
     return icrc3().get_tip();
   };
 
+  //-------------------------------Admin Functions-------------------------------
+
+  // Provides transfer access to the admin
+  // Todo -> remove after assessing the requirement
   // Init function to approve entire collection to the deployer
   // Useful for management and updation of metadata, leads to centralization
   private stable var _init = false;
@@ -971,7 +968,7 @@ shared(_init_msg) actor class Example(_args : {
     if(_init == false){
       //approve the deployer as a spender on all tokens...
       let current_val = icrc37().get_state().ledger_info.collection_approval_requires_token;
-      let update = icrc37().update_ledger_info([#CollectionApprovalRequiresToken(false)]);
+      let _update = icrc37().update_ledger_info([#CollectionApprovalRequiresToken(false)]);
       let result = icrc37().approve_collection<system>(Principal.fromActor(this), [{
         approval_info={
           from_subaccount = null;
@@ -980,7 +977,7 @@ shared(_init_msg) actor class Example(_args : {
           expires_at = null;
           created_at_time = null;}
       }] );
-      let update2 = icrc37().update_ledger_info([#CollectionApprovalRequiresToken(current_val)]);
+      let _update2 = icrc37().update_ledger_info([#CollectionApprovalRequiresToken(current_val)]);
       
       D.print("initialized" # debug_show(result,  {
         from_subaccount = null;
@@ -994,6 +991,8 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   //this lets an admin assign a token to an account
+  // Alternative to mint
+  // Todo -> remove the function after assessing the requirement
   public shared(msg) func assign(token_id : Nat, account : Account) : async Nat {
     if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
 
@@ -1011,8 +1010,11 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
+  // TOdo -> Remove in production
   public query func get_owner(): async Principal {
     icrc7().get_state().owner
   }
+
+  // Todo: Implement Change admin if required
 
 };
