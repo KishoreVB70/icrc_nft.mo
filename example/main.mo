@@ -169,14 +169,13 @@ shared(_init_msg) actor class Example(_args : {
 // Library related functions
 
   // Create a library
-  public func create_library(libreq: CreateLibraryRequest): async LibraryID {
+  public shared(msg) func create_library(libreq: CreateLibraryRequest): async LibraryID {
     // Only the admin can create a library
-    // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
+    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
 
     // UUID
     let uuid = await generate_uuid_nat();
     // let nft_ids = List.nil<Nat>();
-    let nft_ids = [];
 
     let library: Library = {
       description = libreq.description;
@@ -395,7 +394,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // SetNFTRequest is an array of SetNFTItemRequests
   // SetNFTItemRequests has type for metadata which is candyshared
-  public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async Nat {
+  public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async Result.Result<Nat, Text> {
 
     // 1) Generate UUID
     let uuid: Nat = await generate_uuid_nat();
@@ -465,9 +464,9 @@ shared(_init_msg) actor class Example(_args : {
             };
           };
         */
-        return uuid;
+        return #ok(uuid);
       };
-      case(#err(err)) D.trap(err);
+      case(#err(err)) #err(err)
     };
   };
 
