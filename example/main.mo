@@ -4,16 +4,14 @@ import Array "mo:base/Array";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
-import Nat32 "mo:base/Nat32";
 import D "mo:base/Debug";
 import Map "mo:map/Map";
 import Set "mo:map/Set";
-import { n32hash } "mo:map/Map";
+// import { n32hash } "mo:map/Map";
 import { nhash } "mo:map/Map";
 import Result "mo:base/Result";
 
 import Vec "mo:vector";
-import List "mo:base/List";
 
 
 // Certified data for ICRC-3
@@ -232,8 +230,8 @@ shared(_init_msg) actor class Example(_args : {
     return result;
   };
 
-  // Change library or assign a  library 
-  // Have to improve the API -> Has to return something
+  // Change library or assign a  library
+  // Access restricted to only the admin
   public shared(msg) func change_library(
     owner: Account, library_id_from: ?LibraryID,
     library_id_to: LibraryID, nft_id: Nat
@@ -900,8 +898,8 @@ shared(_init_msg) actor class Example(_args : {
     return icrc37().get_collection_approvals(owner, prev, take);
   };
 
+  // Icrc-10 is the standard of exhibiting the standards the contract implements
   public query func icrc10_supported_standards() : async ICRC7.SupportedStandards {
-    //todo: figure this out
     return [
       {name = "ICRC-7"; url = "https://github.com/dfinity/ICRC/ICRCs/ICRC-7"},
       {name = "ICRC-37"; url = "https://github.com/dfinity/ICRC/ICRCs/ICRC-37"}];
@@ -924,19 +922,19 @@ shared(_init_msg) actor class Example(_args : {
 
   // System capabililties not provided to the functions, Why?
   public shared(msg) func icrc7_transfer<system>(args: [TransferArgs]) : async [?TransferResult] {
-      icrc7().transfer(msg.caller, args);
+      icrc7().transfer<system>(msg.caller, args);
   };
 
   public shared(msg) func icrc37_transfer_from<system>(args: [TransferFromArg]) : async [?TransferFromResult] {
-      icrc37().transfer_from(msg.caller, args)
+      icrc37().transfer_from<system>(msg.caller, args)
   };
 
   public shared(msg) func icrc37_revoke_token_approvals<system>(args: [RevokeTokenApprovalArg]) : async [?RevokeTokenApprovalResult] {
-      icrc37().revoke_token_approvals(msg.caller, args);
+      icrc37().revoke_token_approvals<system>(msg.caller, args);
   };
 
   public shared(msg) func icrc37_revoke_collection_approvals(args: [RevokeCollectionApprovalArg]) : async [?RevokeCollectionApprovalResult] {
-      icrc37().revoke_collection_approvals(msg.caller, args);
+      icrc37().revoke_collection_approvals<system>(msg.caller, args);
   };
 
   /////////
