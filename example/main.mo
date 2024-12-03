@@ -168,7 +168,9 @@ shared(_init_msg) actor class Example(_args : {
 // Library related functions
 
   // Create a library
-  public shared(msg) func create_library(libreq: CreateLibraryRequest): async Result.Result<Nat, Text> {
+  public shared(msg) func create_library(
+    libreq: CreateLibraryRequest
+  ): async Result.Result<Nat, Text> {
     // Only the admin can create a library
     if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
 
@@ -395,7 +397,9 @@ shared(_init_msg) actor class Example(_args : {
   };
   */
 
-  public shared(msg) func mint_nft(owner: ?Account, metadata: NFTInput) : async Result.Result<Nat, Text> {
+  public shared(msg) func mint_nft(
+    owner: ?Account, metadata: NFTInput
+  ) : async Result.Result<Nat, Text> {
 
     // 1) Generate UUID
     let uuid: Nat = await generate_uuid_nat();
@@ -502,7 +506,9 @@ shared(_init_msg) actor class Example(_args : {
           };
   */
 
-  public shared(msg) func burn_nft(tokens: [Nat]) : async ICRC7.BurnNFTBatchResponse {
+  public shared(msg) func burn_nft(
+    tokens: [Nat]
+  ) : async ICRC7.BurnNFTBatchResponse {
     let burnrequest = {
       tokens = tokens;
       memo = null;
@@ -863,7 +869,9 @@ shared(_init_msg) actor class Example(_args : {
       };
   };
 
-  public query func icrc7_balance_of(accounts: BalanceOfRequest) : async BalanceOfResponse {
+  public query func icrc7_balance_of(
+    accounts: BalanceOfRequest
+  ) : async BalanceOfResponse {
     return icrc7().balance_of(accounts);
   };
 
@@ -871,7 +879,9 @@ shared(_init_msg) actor class Example(_args : {
     return icrc7().get_tokens_paginated(prev, take);
   };
 
-  public query func icrc7_tokens_of(account: Account, prev: ?Nat, take: ?Nat) : async [Nat] {
+  public query func icrc7_tokens_of(
+    account: Account, prev: ?Nat, take: ?Nat
+  ) : async [Nat] {
     return icrc7().get_tokens_of_paginated(account, prev, take);
   };
 
@@ -880,12 +890,16 @@ shared(_init_msg) actor class Example(_args : {
     return icrc37().is_approved(args);
   };
 
-  public query func icrc37_get_token_approvals(token_ids: [Nat], prev: ?TokenApproval, take: ?Nat) : async [TokenApproval] {
+  public query func icrc37_get_token_approvals(
+    token_ids: [Nat], prev: ?TokenApproval, take: ?Nat
+  ) : async [TokenApproval] {
     
     return icrc37().get_token_approvals(token_ids, prev, take);
   };
 
-  public query func icrc37_get_collection_approvals(owner : Account, prev: ?CollectionApproval, take: ?Nat) : async [CollectionApproval] {
+  public query func icrc37_get_collection_approvals(
+    owner : Account, prev: ?CollectionApproval, take: ?Nat
+  ) : async [CollectionApproval] {
     
     return icrc37().get_collection_approvals(owner, prev, take);
   };
@@ -900,7 +914,9 @@ shared(_init_msg) actor class Example(_args : {
 
   //Update calls
 
-  public shared(msg) func icrc37_approve_tokens(args: [ApproveTokenArg]) : async [?ApproveTokenResult] {
+  public shared(msg) func icrc37_approve_tokens(
+    args: [ApproveTokenArg]
+  ) : async [?ApproveTokenResult] {
 
     switch(icrc37().approve_transfers<system>(msg.caller, args)){
         case(#ok(val)) val;
@@ -908,25 +924,35 @@ shared(_init_msg) actor class Example(_args : {
       };
   };
 
-  public shared(msg) func icrc37_approve_collection(approvals: [ApproveCollectionArg]) : async [?ApproveCollectionResult] {
+  public shared(msg) func icrc37_approve_collection(
+    approvals: [ApproveCollectionArg]
+  ) : async [?ApproveCollectionResult] {
       icrc37().approve_collection<system>( msg.caller, approvals);
   };
 
   // System capabililties not provided to the functions, Why?
   // Warn: Potential error and debugging point
-  public shared(msg) func icrc7_transfer<system>(args: [TransferArgs]) : async [?TransferResult] {
+  public shared(msg) func icrc7_transfer<system>(
+    args: [TransferArgs]
+  ) : async [?TransferResult] {
       icrc7().transfer<system>(msg.caller, args);
   };
 
-  public shared(msg) func icrc37_transfer_from<system>(args: [TransferFromArg]) : async [?TransferFromResult] {
+  public shared(msg) func icrc37_transfer_from<system>(
+    args: [TransferFromArg]
+  ) : async [?TransferFromResult] {
       icrc37().transfer_from<system>(msg.caller, args)
   };
 
-  public shared(msg) func icrc37_revoke_token_approvals<system>(args: [RevokeTokenApprovalArg]) : async [?RevokeTokenApprovalResult] {
+  public shared(msg) func icrc37_revoke_token_approvals<system>(
+    args: [RevokeTokenApprovalArg]
+  ) : async [?RevokeTokenApprovalResult] {
       icrc37().revoke_token_approvals<system>(msg.caller, args);
   };
 
-  public shared(msg) func icrc37_revoke_collection_approvals(args: [RevokeCollectionApprovalArg]) : async [?RevokeCollectionApprovalResult] {
+  public shared(msg) func icrc37_revoke_collection_approvals(
+    args: [RevokeCollectionApprovalArg]
+  ) : async [?RevokeCollectionApprovalResult] {
       icrc37().revoke_collection_approvals<system>(msg.caller, args);
   };
 
@@ -934,11 +960,15 @@ shared(_init_msg) actor class Example(_args : {
   // ICRC3 endpoints
   /////////
 
-  public query func icrc3_get_blocks(args: [ICRC3.TransactionRange]) : async ICRC3.GetTransactionsResult{
+  public query func icrc3_get_blocks(
+    args: [ICRC3.TransactionRange]
+  ) : async ICRC3.GetTransactionsResult{
     return icrc3().get_blocks(args);
   };
 
-  public query func icrc3_get_archives(args: ICRC3.GetArchivesArgs) : async ICRC3.GetArchivesResult{
+  public query func icrc3_get_archives(
+    args: ICRC3.GetArchivesArgs
+  ) : async ICRC3.GetArchivesResult{
     return icrc3().get_archives(args);
   };
 
