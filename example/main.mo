@@ -501,15 +501,20 @@ shared(_init_msg) actor class Example(_args : {
           };
   */
 
-  public shared(msg) func burn_nft(tokens: ICRC7.BurnNFTRequest) : async ICRC7.BurnNFTBatchResponse {
-      switch(icrc7().burn_nfts<system>(msg.caller, tokens)){
-        case(#ok(val)) {
-          // 1) Remove NFT from user profile
-          // 2) Remove NFT from library
-          return val;
-        };
-        case(#err(err)) D.trap(err);
+  public shared(msg) func burn_nft(tokens: [Nat]) : async ICRC7.BurnNFTBatchResponse {
+    let burnrequest = {
+      tokens = tokens;
+      memo = null;
+      created_at_time = null;
+    };
+
+    switch(icrc7().burn_nfts<system>(msg.caller, burnrequest)){
+      case(#ok(val)) {
+        // 1) Remove NFT from library
+        return val;
       };
+      case(#err(err)) D.trap(err);
+    };
   };
 
   // Function to generate unique id
