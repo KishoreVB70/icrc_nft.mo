@@ -303,18 +303,26 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
-  // Get list of library ids of of users
-  public func get_user_libraries(user: Account): async ?[LibraryID] {
+  // Get list of library ids of users
+  public func get_user_library_ids(user: Account): async [LibraryID] {
     let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
     switch(result) {
       case(?val) {
         let array = Set.toArray(val);
-        return ?array;
+        return array;
       };
       case null {
-        null
+        return [];
       };
     };
+  };
+
+  // Get list of libraries of users
+  public func get_user_libraries(user: Account): async [Library] {
+    // 1) Get user ids
+    let ids: [LibraryID] = await get_user_library_ids(user);
+    let libraries = await get_libraries(ids);
+    return libraries;
   };
 
   public shared(msg) func mint_nft(
