@@ -59,11 +59,11 @@ export const idlFactory = ({ IDL }) => {
       'symbol' : IDL.Opt(IDL.Text),
     })
   );
+  const Result_1 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
   const Account__1 = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
-  const Result_1 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
   const LibraryID = IDL.Nat;
   const CreateLibraryRequest = IDL.Record({
     'thumbnail' : IDL.Text,
@@ -405,7 +405,6 @@ export const idlFactory = ({ IDL }) => {
     'Class' : IDL.Vec(PropertyShared),
   });
   const Example = IDL.Service({
-    'assign' : IDL.Func([IDL.Nat, Account__1], [IDL.Nat], []),
     'burn_nft' : IDL.Func([IDL.Vec(IDL.Nat)], [Result_1], []),
     'change_library' : IDL.Func(
         [Account__1, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
@@ -413,20 +412,14 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'create_library' : IDL.Func([CreateLibraryRequest], [Result], []),
-    'generate_uuid_nat' : IDL.Func([], [IDL.Nat], []),
     'get_libraries' : IDL.Func(
         [IDL.Vec(LibraryID)],
         [IDL.Vec(Library)],
         ['query'],
       ),
-    'get_library' : IDL.Func([LibraryID], [IDL.Opt(Library)], ['query']),
-    'get_owner' : IDL.Func([], [IDL.Principal], ['query']),
     'get_tip' : IDL.Func([], [Tip], ['query']),
-    'get_user_libraries' : IDL.Func(
-        [Account__1],
-        [IDL.Opt(IDL.Vec(LibraryID))],
-        [],
-      ),
+    'get_user_libraries' : IDL.Func([Account__1], [IDL.Vec(Library)], []),
+    'get_user_library_ids' : IDL.Func([Account__1], [IDL.Vec(LibraryID)], []),
     'icrc10_supported_standards' : IDL.Func(
         [],
         [SupportedStandards__1],
@@ -547,7 +540,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'icrc7_tx_window' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
-    'init' : IDL.Func([], [], []),
     'mint_nft' : IDL.Func([IDL.Opt(Account__1), NFTInput], [Result], []),
   });
   return Example;

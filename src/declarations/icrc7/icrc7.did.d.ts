@@ -103,19 +103,16 @@ export interface DataCertificate {
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'assign' : ActorMethod<[bigint, Account__1], bigint>,
   'burn_nft' : ActorMethod<[Array<bigint>], Result_1>,
   'change_library' : ActorMethod<
     [Account__1, [] | [LibraryID], LibraryID, bigint],
     Result_1
   >,
   'create_library' : ActorMethod<[CreateLibraryRequest], Result>,
-  'generate_uuid_nat' : ActorMethod<[], bigint>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
-  'get_library' : ActorMethod<[LibraryID], [] | [Library]>,
-  'get_owner' : ActorMethod<[], Principal>,
   'get_tip' : ActorMethod<[], Tip>,
-  'get_user_libraries' : ActorMethod<[Account__1], [] | [Array<LibraryID>]>,
+  'get_user_libraries' : ActorMethod<[Account__1], Array<Library>>,
+  'get_user_library_ids' : ActorMethod<[Account__1], Array<LibraryID>>,
   'icrc10_supported_standards' : ActorMethod<[], SupportedStandards__1>,
   'icrc37_approve_collection' : ActorMethod<
     [Array<ApproveCollectionArg>],
@@ -188,7 +185,6 @@ export interface Example {
     Array<[] | [TransferResult]>
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
-  'init' : ActorMethod<[], undefined>,
   'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], Result>,
 }
 export interface GetArchivesArgs { 'from' : [] | [Principal] }
