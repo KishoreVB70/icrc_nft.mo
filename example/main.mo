@@ -33,7 +33,6 @@ import ICRC3Default "./initial_state/icrc3";
 import Source "mo:uuid/async/SourceV4";
 import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
-import List "mo:base/List";
 
 
 
@@ -83,30 +82,6 @@ shared(_init_msg) actor class Example(_args : {
   stable var init_msg = _init_msg; //preserves original initialization;
 
   // Data types for Management
-
-  /*
-    public type NFTMetadata = {
-      audio: Text;
-      duration: Nat;
-      audio_type: Text;
-      gengre: Text;
-      creator: Text; // Optional - name of the creator
-      description: Text; // Optional
-      library_id: Nat32; // Optional
-    };
-
-    public type SetNFTRequest = [SetNFTItemRequest];
-
-    public type SetNFTItemRequest = {
-      token_id: Nat;
-      metadata: NFTMetadata;
-      owner: ?Account;
-      override: Bool;
-      memo: ?Blob;
-      created_at_time : ?Nat64;
-    };
-  */
-
   public type LibraryID = Nat;
   type LibraryIDS = Set.Set<LibraryID>;
 
@@ -125,40 +100,6 @@ shared(_init_msg) actor class Example(_args : {
     thumbnail: Text;
     owner: Account;
   };
-
-  // public type Update = {
-  //   name : Text;
-  //   mode : UpdateMode;
-  // };
-  // /// Mode for the update operation.
-  // public type UpdateMode = {
-  //   #Set    : Candy;
-  //   #Lock    : Candy;
-  //   #Next   : [Update];
-  // };
-  // public type UpdateNFTRequest = [UpdateNFTItemRequest];
-  // public type UpdateNFTItemRequest = {
-  //   memo: ?Blob;
-  //   created_at_time : ?Nat64;
-  //   token_id: Nat;
-  //   updates: [CandyTypesLib.Update]
-  // };
-
-  /*
-      public type User = {
-        user_id: UserId;
-        user_account: Account;
-        user_name: ?Text;
-        library_ids: [LibraryId];
-        nft_ids: [Nat32];
-      };
-      User related functions
-      public shared(msg) func create_user(user: User): async UserId {
-        // if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-        Map.set(users, n32hash, user.user_id, user);
-        return user.user_id;
-      };
-  */
 
   // Stable variables
   stable var userslibraries = Map.new<Account, LibraryIDS>();
@@ -223,13 +164,6 @@ shared(_init_msg) actor class Example(_args : {
       };
     };
     return Vec.toArray(libs);
-  };
-
-  // Get a single library
-  // Todo - Remove after assessing requirement
-  public query func get_library(library_id: LibraryID): async ?Library {
-    let result: ?Library = Map.get(libraries, nhash, library_id);
-    return result;
   };
 
   // Change library or assign a  library
@@ -369,9 +303,6 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
-
-  
-
   // Get list of library ids of of users
   public func get_user_libraries(user: Account): async ?[LibraryID] {
     let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
@@ -385,35 +316,6 @@ shared(_init_msg) actor class Example(_args : {
       };
     };
   };
-
-  // Add nft id to library
-  /*
-    public func add_nft_to_library(nft_id: Nat, library_id: LibraryID): async Bool {
-    // Get the library
-    let lib: ?Library = Map.get(libraries, nhash, library_id);
-
-    switch lib {
-      case(?val) {
-        // let new_list = List.push(nft_id, val.nft_ids);
-
-        let updated_lib: Library = {
-          description = val.description;
-          library_id = val.library_id;
-          name = val.name;
-          nft_ids = new_list;
-          owner = val.owner;
-          thumbnail = val.thumbnail;
-        };
-
-        Map.set(libraries, nhash, library_id, updated_lib);
-        return true;
-      };
-      case (null) {
-        return false;
-      };
-    };
-  };
-  */
 
   public shared(msg) func mint_nft(
     owner: ?Account, metadata: NFTInput
@@ -436,93 +338,14 @@ shared(_init_msg) actor class Example(_args : {
     // Official function provided by ICRC-7 to mint an NFT
     // Must be careful as calling set_nfts on existing token will replace it with new metadata
     // Only the deployer can call this function
-
-    // Way 1) Updating the library before the call
-
-    // Way 2) Updating the library after the call
     switch(icrc7().set_nfts<system>(msg.caller, [req], true)){
       // The value is just the transaction id, not required
       case(#ok(_val)) {
-        /*
-          for (result in val.vals()) {
-
-            switch (result) {
-              case (#Ok(?natValue)) {
-                // If it's #Ok with a Nat value, add it to the list
-
-                // 1) Get the library
-                // 1a) Get the library id from the nft id
-                let lib_id: Nat = 0;
-                let token_ids = [natValue];
-                let metadatas: [?[(Text, Value)]]  = icrc7().token_metadata(token_ids);
-
-                let metadata: ?[(Text, Value)] = metadatas[0];
-
-                switch(metadata) {
-                  case(?metadataval) {
-                    for ((key, value) in metadataval.vals()) {
-                      if(key.equals("library_id")) {
-                        lib_id: value;
-                      };
-                    // metadataval is an array of Text, Value tuples, we need to traverse the array and find the value
-
-                    let lib: ?Library = Map.get(libraries, n32hash, metadataval.library_id);
-                  };
-                  case(null){};
-                };
-
-                switch (lib) {
-                  case(?val) {
-                    // Library id exists
-                    let list = val.nft_ids;
-                    List.push(token_ids);
-                  };
-                  case(null) {
-                  };
-                };
-              };
-
-              case _{
-              };
-            };
-          };
-        */
         return #ok(uuid);
       };
       case(#err(err)) #err(err)
     };
   };
-
-  /*
-            switch (result) {
-            case (#ok(?natValue)) {
-              // If it's #Ok with a Nat value, add it to the list
-
-              // 1) Get the library
-              // 1a) Get the library id from the nft id
-              let token_ids = [natValue];
-              let metadata = icrc7().token_metadata(token_ids);
-
-              let lib: ?Library = Map.get(libraries, n32hash, metadata[0].library_id);
-
-              switch (lib) {
-                case(?val) {
-                  // Library id exists
-                  let list = val.nft_ids;
-                  List.push(token_ids);
-                };
-                case(null) {
-                };
-              };
-            };
-            case (#Err(_)) {
-              // Handle the error case if necessary (e.g., logging)
-            };
-            case (#GenericError { error_code; message }) {
-              // Handle generic errors (e.g., logging)
-            };
-          };
-  */
 
   public shared(msg) func burn_nft(
     tokens: [Nat]
@@ -534,6 +357,7 @@ shared(_init_msg) actor class Example(_args : {
     };
 
     // Check if the account is the owner of the tokens
+    // Removal of a token from library in case of a burn
 
     // 1) Obtain the library id of the nft to clear it after success
     /*
@@ -580,9 +404,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Function to generate unique id
-  // Warn: public for testing
-  // Todo - change to private for production
-  public func generate_uuid_nat(): async Nat {
+  private func generate_uuid_nat(): async Nat {
     let g = Source.Source();
     let val = await g.new();
     var result : Nat = 0;
@@ -644,7 +466,7 @@ shared(_init_msg) actor class Example(_args : {
     return icrc3_state_current;
   };
 
-  // About certification - ICRC-3
+  // Certification functions - ICRC-3
 
   // CertTree is from another package
   stable let cert_store : CertTree.Store = CertTree.newStore();
@@ -711,6 +533,15 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
+  type TransferNotification = {
+    from : Account;
+    to : Account;
+    token_id : Nat;
+    memo : ?Blob;
+    created_at_time : ?Nat64;
+  };
+  public type Transaction = Value;
+
   private func get_icrc7_environment() : ICRC7.Environment {
     {
       canister = get_canister;
@@ -720,6 +551,13 @@ shared(_init_msg) actor class Example(_args : {
       can_mint = null;
       can_burn = null;
       can_transfer = null;
+      // Potential function to disable transfer permanently
+      // can_transfer = ?(
+      //   func<system>(trx: Transaction, trxtop: ?Transaction, notification: TransferNotification)
+      //       : Result.Result<(Transaction, ?Transaction, TransferNotification), Text> {
+      //       // Return an appropriate error or result
+      //       return #err("Transfer is not allowed: This token is non-transferable.");
+      //   });
       can_update = null;
     };
   };
@@ -788,8 +626,9 @@ shared(_init_msg) actor class Example(_args : {
     Time.now();
   };
 
-//----------------------------ICRC-7 public functions---------------------------------------------------
-
+  /////////
+  // ICRC-37 endpoints
+  /////////
   public query func icrc7_symbol() : async Text {
     return switch(icrc7().get_ledger_info().symbol){
       case(?val) val;
@@ -905,7 +744,9 @@ shared(_init_msg) actor class Example(_args : {
     return icrc7().get_tokens_of_paginated(account, prev, take);
   };
 
-//--------------------------- ICRC-37 public Functions-------------------------------------------------------
+  /////////
+  // ICRC-37 endpoints
+  /////////
   public query func icrc37_is_approved(args: [IsApprovedArg]) : async [Bool] {
     return icrc37().is_approved(args);
   };
@@ -1003,68 +844,4 @@ shared(_init_msg) actor class Example(_args : {
   public query func get_tip() : async ICRC3.Tip {
     return icrc3().get_tip();
   };
-
-  //-------------------------------Admin Functions-------------------------------
-
-  // Provides transfer access to the admin
-  // Todo -> remove after assessing the requirement
-  // Init function to approve entire collection to the deployer
-  // Useful for management and updation of metadata, leads to centralization
-  private stable var _init = false;
-  public shared(_msg) func init() : async () {
-    //can only be called once
-
-    //Warning:  This is a test scenario and should not be used in production.  This creates an approval for the owner of the canister and this can be garbage collected if the max_approvals is hit.  We advise minting with the target owner in the metadata or creating an assign function (see assign)
-    if(_init == false){
-      //approve the deployer as a spender on all tokens...
-      let current_val = icrc37().get_state().ledger_info.collection_approval_requires_token;
-      let _update = icrc37().update_ledger_info([#CollectionApprovalRequiresToken(false)]);
-      let result = icrc37().approve_collection<system>(Principal.fromActor(this), [{
-        approval_info={
-          from_subaccount = null;
-          spender = {owner = icrc7().get_state().owner; subaccount = null}; 
-          memo =  null;
-          expires_at = null;
-          created_at_time = null;}
-      }] );
-      let _update2 = icrc37().update_ledger_info([#CollectionApprovalRequiresToken(current_val)]);
-      
-      D.print("initialized" # debug_show(result,  {
-        from_subaccount = null;
-        spender = {owner = icrc7().get_state().owner; subaccount = null}; 
-        memo =  null;
-        expires_at = null;
-        created_at_time = null;
-      }));
-    };
-    _init := true;
-  };
-
-  //this lets an admin assign a token to an account
-  // Alternative to mint
-  // Todo -> remove the function after assessing the requirement
-  public shared(msg) func assign(token_id : Nat, account : Account) : async Nat {
-    if(msg.caller != icrc7().get_state().owner) D.trap("Unauthorized");
-
-    switch(icrc7().transfer<system>(Principal.fromActor(this), [{
-      from_subaccount = null;
-      to = account;
-      token_id = token_id;
-      memo = null;
-      created_at_time = null;
-    }])[0]){
-
-      case(?#Ok(val)) val;
-      case(?#Err(err)) D.trap(debug_show(err));
-      case(_) D.trap("unknown");
-    };
-  };
-
-  // TOdo -> Remove in production
-  public query func get_owner(): async Principal {
-    icrc7().get_state().owner
-  }
-
-  // Todo: Implement Change admin if required
-
 };
