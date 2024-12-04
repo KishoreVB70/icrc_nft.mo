@@ -340,6 +340,10 @@ type Example =
    get_tip: () -> (Tip) query;
    get_user_libraries: (Account__1) -> (vec Library);
    get_user_library_ids: (Account__1) -> (vec LibraryID);
+   get_user_nft_metadatas: (Account__1) -> (vec opt vec record {
+                                                          text;
+                                                          Value;
+                                                        });
    icrc10_supported_standards: () -> (SupportedStandards__1) query;
    icrc37_approve_collection: (vec ApproveCollectionArg) ->
     (vec opt ApproveCollectionResult);

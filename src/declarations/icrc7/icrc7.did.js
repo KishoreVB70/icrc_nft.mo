@@ -85,6 +85,24 @@ export const idlFactory = ({ IDL }) => {
     'hash_tree' : IDL.Vec(IDL.Nat8),
     'last_block_hash' : IDL.Vec(IDL.Nat8),
   });
+  Value__1.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Map' : IDL.Vec(IDL.Tuple(IDL.Text, Value__1)),
+      'Nat' : IDL.Nat,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Text' : IDL.Text,
+      'Array' : IDL.Vec(Value__1),
+    })
+  );
+  const Value = IDL.Variant({
+    'Int' : IDL.Int,
+    'Map' : IDL.Vec(IDL.Tuple(IDL.Text, Value__1)),
+    'Nat' : IDL.Nat,
+    'Blob' : IDL.Vec(IDL.Nat8),
+    'Text' : IDL.Text,
+    'Array' : IDL.Vec(Value__1),
+  });
   const SupportedStandards__1 = IDL.Vec(
     IDL.Record({ 'url' : IDL.Text, 'name' : IDL.Text })
   );
@@ -299,24 +317,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const BalanceOfRequest = IDL.Vec(Account__2);
   const BalanceOfResponse = IDL.Vec(IDL.Nat);
-  Value__1.fill(
-    IDL.Variant({
-      'Int' : IDL.Int,
-      'Map' : IDL.Vec(IDL.Tuple(IDL.Text, Value__1)),
-      'Nat' : IDL.Nat,
-      'Blob' : IDL.Vec(IDL.Nat8),
-      'Text' : IDL.Text,
-      'Array' : IDL.Vec(Value__1),
-    })
-  );
-  const Value = IDL.Variant({
-    'Int' : IDL.Int,
-    'Map' : IDL.Vec(IDL.Tuple(IDL.Text, Value__1)),
-    'Nat' : IDL.Nat,
-    'Blob' : IDL.Vec(IDL.Nat8),
-    'Text' : IDL.Text,
-    'Array' : IDL.Vec(Value__1),
-  });
   const OwnerOfRequest = IDL.Vec(IDL.Nat);
   const OwnerOfResponse = IDL.Vec(IDL.Opt(Account__2));
   const TransferArgs = IDL.Record({
@@ -420,6 +420,11 @@ export const idlFactory = ({ IDL }) => {
     'get_tip' : IDL.Func([], [Tip], ['query']),
     'get_user_libraries' : IDL.Func([Account__1], [IDL.Vec(Library)], []),
     'get_user_library_ids' : IDL.Func([Account__1], [IDL.Vec(LibraryID)], []),
+    'get_user_nft_metadatas' : IDL.Func(
+        [Account__1],
+        [IDL.Vec(IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, Value))))],
+        [],
+      ),
     'icrc10_supported_standards' : IDL.Func(
         [],
         [SupportedStandards__1],

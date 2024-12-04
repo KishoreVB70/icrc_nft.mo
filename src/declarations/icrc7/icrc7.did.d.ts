@@ -113,6 +113,10 @@ export interface Example {
   'get_tip' : ActorMethod<[], Tip>,
   'get_user_libraries' : ActorMethod<[Account__1], Array<Library>>,
   'get_user_library_ids' : ActorMethod<[Account__1], Array<LibraryID>>,
+  'get_user_nft_metadatas' : ActorMethod<
+    [Account__1],
+    Array<[] | [Array<[string, Value]>]>
+  >,
   'icrc10_supported_standards' : ActorMethod<[], SupportedStandards__1>,
   'icrc37_approve_collection' : ActorMethod<
     [Array<ApproveCollectionArg>],
