@@ -117,17 +117,7 @@ shared(_init_msg) actor class Example(_args : {
 // User related functions
   // Get user from ID
   public query func get_users_from_ids(user_ids: [Nat]): async [UserProfile] {
-    let users = Vec.new<UserProfile>();
-    for (user_id in user_ids.vals()) {
-      let user: ?UserProfile = Map.get(userprofiles, nhash, user_id);
-      switch user {
-        case (?val) {
-          Vec.add(users, val);
-        };
-        case (null) {};
-      };
-    };
-    return Vec.toArray(users);
+    return get_users(user_ids);
   };
 
   // Get user from Account
@@ -142,11 +132,13 @@ shared(_init_msg) actor class Example(_args : {
         case (null) {};
       };
     };
-
-    // Repeated code since a query function cannot be called by another query function
-    // We would need to convert this function to an update function which is not optimal
     let user_ids = Vec.toArray(user_ids_vec);
-        let users = Vec.new<UserProfile>();
+    return get_users(user_ids);
+  };
+
+
+  private func get_users(user_ids: [Nat]): [UserProfile] {
+    let users = Vec.new<UserProfile>();
     for (user_id in user_ids.vals()) {
       let user: ?UserProfile = Map.get(userprofiles, nhash, user_id);
       switch user {
@@ -158,7 +150,7 @@ shared(_init_msg) actor class Example(_args : {
     };
     return Vec.toArray(users);
   };
-
+  
   // Create user
 
 
@@ -375,7 +367,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Get list of libraries of users
-  public queryfunc get_user_libraries(user: Account): async [Library] {
+  public func get_user_libraries(user: Account): async [Library] {
     // 1) Get user ids
     let ids: [LibraryID] = await get_user_library_ids(user);
     let libraries = await get_libraries(ids);
