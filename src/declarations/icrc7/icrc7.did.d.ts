@@ -98,19 +98,24 @@ export interface CreateLibraryRequest {
   'name' : string,
   'description' : string,
 }
+export interface CreateUserRequest {
+  'name' : string,
+  'email' : string,
+  'image' : string,
+}
 export interface DataCertificate {
   'certificate' : Uint8Array | number[],
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'burn_nft' : ActorMethod<[Array<bigint>], Result_1>,
+  'burn_nft' : ActorMethod<[Array<bigint>], Result_2>,
   'change_library' : ActorMethod<
     [Account__1, [] | [LibraryID], LibraryID, bigint],
-    Result_1
+    Result_2
   >,
   'create_library' : ActorMethod<[CreateLibraryRequest], Result>,
+  'create_user' : ActorMethod<[Account__1, CreateUserRequest], Result_1>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
-  'get_num' : ActorMethod<[], number>,
   'get_tip' : ActorMethod<[], Tip>,
   'get_user_libraries' : ActorMethod<[Account__1], Array<Library>>,
   'get_user_library_ids' : ActorMethod<[Account__1], Array<LibraryID>>,
@@ -122,7 +127,7 @@ export interface Example {
     [Array<Account__1>],
     Array<UserProfile>
   >,
-  'get_users_from_ids' : ActorMethod<[Array<bigint>], Array<UserProfile>>,
+  'get_users_from_ids' : ActorMethod<[Array<string>], Array<UserProfile>>,
   'icrc10_supported_standards' : ActorMethod<[], SupportedStandards__1>,
   'icrc37_approve_collection' : ActorMethod<
     [Array<ApproveCollectionArg>],
@@ -311,7 +316,9 @@ export interface PropertyShared {
 }
 export type Result = { 'ok' : bigint } |
   { 'err' : string };
-export type Result_1 = { 'ok' : boolean } |
+export type Result_1 = { 'ok' : string } |
+  { 'err' : string };
+export type Result_2 = { 'ok' : boolean } |
   { 'err' : string };
 export interface RevokeCollectionApprovalArg {
   'memo' : [] | [Uint8Array | number[]],
