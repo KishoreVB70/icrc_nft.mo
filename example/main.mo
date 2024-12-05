@@ -425,7 +425,7 @@ shared(_init_msg) actor class Example(_args : {
   // Get list of libraries of users
   public query func get_user_libraries(user: Account): async [Library] {
     // 1) Get user ids
-    let ids: [LibraryID] = get_user_library_ids(user);
+    let ids: [LibraryID] = get_user_library_ids_private(user);
     let libraries = get_libraries_private(ids);
     return libraries;
   };

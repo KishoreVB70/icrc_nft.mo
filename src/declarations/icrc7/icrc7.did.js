@@ -432,8 +432,16 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_tip' : IDL.Func([], [Tip], ['query']),
     'get_user_id' : IDL.Func([Account__1], [Result_1], ['query']),
-    'get_user_libraries' : IDL.Func([Account__1], [IDL.Vec(Library)], []),
-    'get_user_library_ids' : IDL.Func([Account__1], [IDL.Vec(LibraryID)], []),
+    'get_user_libraries' : IDL.Func(
+        [Account__1],
+        [IDL.Vec(Library)],
+        ['query'],
+      ),
+    'get_user_library_ids' : IDL.Func(
+        [Account__1],
+        [IDL.Vec(LibraryID)],
+        ['query'],
+      ),
     'get_user_nft_metadatas' : IDL.Func(
         [Account__1],
         [IDL.Vec(IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, Value))))],
