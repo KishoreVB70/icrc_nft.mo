@@ -103,6 +103,12 @@ shared(_init_msg) actor class Example(_args : {
     owner: Account;
   };
 
+  public type CreateUserRequest = {
+    name: Text;
+    email: Text;
+    image: Text;
+  };
+
   public type UserProfile = {
     name: Text;
     email: Text;
@@ -151,7 +157,31 @@ shared(_init_msg) actor class Example(_args : {
     };
     return Vec.toArray(users);
   };
+
   // Create user
+  public shared(msg) func create_user(
+    account: Account,
+    user_req: CreateUserRequest
+  ): async Result.Result<Text, Text> {
+    // Only the admin can create a user
+    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
+
+    let uuid: Text = await generate_uuid_text();
+
+    let user: UserProfile = {
+      name: user_req.name;
+      email: user_req.email;
+      image: user_req.image;
+      account: Account;
+    };
+
+    // Map Account to uuid
+    Map.set(userids, ahash, account, uuid);
+
+    // Map uuid to profile
+    Map.set(userprofiles, thash, uuid, user);
+    return #ok(uuid);
+  };
 
 
 // Library related functions
@@ -165,7 +195,6 @@ shared(_init_msg) actor class Example(_args : {
 
     // UUID
     let uuid = await generate_uuid_nat();
-    // let nft_ids = List.nil<Nat>();
 
     let library: Library = {
       description = libreq.description;
@@ -177,10 +206,9 @@ shared(_init_msg) actor class Example(_args : {
     };
   
     // 1) Create the library
-    Map.set(libraries, nhash, library.library_id , library);
+    Map.set(libraries, nhash, uuid , library);
 
     // 2) Update the user libraries
-    let _hasUser: Bool = Map.has(userslibraries, ahash, library.owner);
     let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
 
     switch userlibs {
