@@ -165,6 +165,13 @@ shared(_init_msg) actor class Example(_args : {
   ): async Result.Result<Text, Text> {
     // Only the admin can create a user
     if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
+    let acc: ?Text = Map.get(userids, ahash, account);
+    switch (acc) {
+      case (?_val) {
+        return #err("User already exists");
+      };
+      case null{}
+    };
 
     let uuid: Text = await generate_uuid_text();
 
