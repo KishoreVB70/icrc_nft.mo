@@ -117,6 +117,7 @@ export interface Example {
   'create_user' : ActorMethod<[Account__1, CreateUserRequest], Result_1>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
   'get_tip' : ActorMethod<[], Tip>,
+  'get_user_id' : ActorMethod<[Account__1], Result_1>,
   'get_user_libraries' : ActorMethod<[Account__1], Array<Library>>,
   'get_user_library_ids' : ActorMethod<[Account__1], Array<LibraryID>>,
   'get_user_nft_metadatas' : ActorMethod<

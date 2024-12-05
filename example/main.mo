@@ -247,8 +247,13 @@ shared(_init_msg) actor class Example(_args : {
     return #ok(library.library_id);
   };
 
+
   // Get multiple Libraries
   public query func get_libraries(library_ids: [LibraryID]): async [Library] {
+    return get_libraries_private(library_ids);
+  };
+
+  private func get_libraries_private(library_ids: [LibraryID]): [Library] {
     let libs = Vec.new<Library>();
     for (lib_id in library_ids.vals()) {
       let lib: ?Library = Map.get(libraries, nhash, lib_id);
@@ -400,7 +405,11 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Get list of library ids of users
-  public func get_user_library_ids(user: Account): async [LibraryID] {
+  public query func get_user_library_ids(user: Account): async [LibraryID] {
+    return get_user_library_ids_private(user);
+  };
+
+  private func get_user_library_ids_private(user: Account): [LibraryID] {
     let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
     switch(result) {
       case(?val) {
@@ -414,10 +423,10 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Get list of libraries of users
-  public func get_user_libraries(user: Account): async [Library] {
+  public query func get_user_libraries(user: Account): async [Library] {
     // 1) Get user ids
-    let ids: [LibraryID] = await get_user_library_ids(user);
-    let libraries = await get_libraries(ids);
+    let ids: [LibraryID] = get_user_library_ids(user);
+    let libraries = get_libraries_private(ids);
     return libraries;
   };
 
