@@ -103,6 +103,12 @@ export const idlFactory = ({ IDL }) => {
     'Text' : IDL.Text,
     'Array' : IDL.Vec(Value__1),
   });
+  const UserProfile = IDL.Record({
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'account' : Account__1,
+    'image' : IDL.Text,
+  });
   const SupportedStandards__1 = IDL.Vec(
     IDL.Record({ 'url' : IDL.Text, 'name' : IDL.Text })
   );
@@ -417,6 +423,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Library)],
         ['query'],
       ),
+    'get_num' : IDL.Func([], [IDL.Nat32], ['query']),
     'get_tip' : IDL.Func([], [Tip], ['query']),
     'get_user_libraries' : IDL.Func([Account__1], [IDL.Vec(Library)], []),
     'get_user_library_ids' : IDL.Func([Account__1], [IDL.Vec(LibraryID)], []),
@@ -424,6 +431,16 @@ export const idlFactory = ({ IDL }) => {
         [Account__1],
         [IDL.Vec(IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, Value))))],
         [],
+      ),
+    'get_users_from_accounts' : IDL.Func(
+        [IDL.Vec(Account__1)],
+        [IDL.Vec(UserProfile)],
+        ['query'],
+      ),
+    'get_users_from_ids' : IDL.Func(
+        [IDL.Vec(IDL.Nat)],
+        [IDL.Vec(UserProfile)],
+        ['query'],
       ),
     'icrc10_supported_standards' : IDL.Func(
         [],

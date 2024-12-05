@@ -34,6 +34,13 @@ type Value =
    Nat: nat;
    Text: text;
  };
+type UserProfile = 
+ record {
+   account: Account__1;
+   email: text;
+   image: text;
+   name: text;
+ };
 type TransferResult = 
  variant {
    Err: TransferError;
@@ -337,6 +344,7 @@ type Example =
    change_library: (Account__1, opt LibraryID, LibraryID, nat) -> (Result_1);
    create_library: (CreateLibraryRequest) -> (Result);
    get_libraries: (vec LibraryID) -> (vec Library) query;
+   get_num: () -> (nat32) query;
    get_tip: () -> (Tip) query;
    get_user_libraries: (Account__1) -> (vec Library);
    get_user_library_ids: (Account__1) -> (vec LibraryID);
@@ -344,6 +352,8 @@ type Example =
                                                           text;
                                                           Value;
                                                         });
+   get_users_from_accounts: (vec Account__1) -> (vec UserProfile) query;
+   get_users_from_ids: (vec nat) -> (vec UserProfile) query;
    icrc10_supported_standards: () -> (SupportedStandards__1) query;
    icrc37_approve_collection: (vec ApproveCollectionArg) ->
     (vec opt ApproveCollectionResult);

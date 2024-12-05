@@ -9,6 +9,7 @@ import Map "mo:map/Map";
 import Set "mo:map/Set";
 // import { n32hash } "mo:map/Map";
 import { nhash } "mo:map/Map";
+import { thash } "mo:map/Map";
 import Result "mo:base/Result";
 import Vec "mo:vector";
 
@@ -31,6 +32,7 @@ import ICRC3Default "./initial_state/icrc3";
 
 // UUID
 import Source "mo:uuid/async/SourceV4";
+import UUID "mo:uuid/UUID";
 import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
 
@@ -111,20 +113,20 @@ shared(_init_msg) actor class Example(_args : {
   // Stable variables
   stable var userslibraries = Map.new<Account, LibraryIDS>();
   stable var libraries = Map.new<LibraryID, Library>();
-  stable var userids = Map.new<Account, Nat>();
-  stable var userprofiles = Map.new<Nat, UserProfile>();
+  stable var userids = Map.new<Account, Text>();
+  stable var userprofiles = Map.new<Text, UserProfile>();
 
 // User related functions
   // Get user from ID
-  public query func get_users_from_ids(user_ids: [Nat]): async [UserProfile] {
+  public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
     return get_users(user_ids);
   };
 
   // Get user from Account
   public query func get_users_from_accounts(accounts: [Account]): async [UserProfile] {
-    let user_ids_vec = Vec.new<Nat>();
+    let user_ids_vec = Vec.new<Text>();
     for (account in accounts.vals()) {
-      let uid: ?Nat = Map.get(userids, ahash, account);
+      let uid: ?Text = Map.get(userids, ahash, account);
       switch uid {
         case (?val) {
           Vec.add(user_ids_vec, val);
@@ -136,11 +138,10 @@ shared(_init_msg) actor class Example(_args : {
     return get_users(user_ids);
   };
 
-
-  private func get_users(user_ids: [Nat]): [UserProfile] {
+  private func get_users(user_ids: [Text]): [UserProfile] {
     let users = Vec.new<UserProfile>();
     for (user_id in user_ids.vals()) {
-      let user: ?UserProfile = Map.get(userprofiles, nhash, user_id);
+      let user: ?UserProfile = Map.get(userprofiles, thash, user_id);
       switch user {
         case (?val) {
           Vec.add(users, val);
@@ -150,7 +151,6 @@ shared(_init_msg) actor class Example(_args : {
     };
     return Vec.toArray(users);
   };
-  
   // Create user
 
 
@@ -476,7 +476,12 @@ shared(_init_msg) actor class Example(_args : {
       result := result * 256 + Nat8.toNat(byte);
     };
     result
-  };  
+  };
+
+  private func generate_uuid_text(): async Text {
+    let g = Source.Source();
+    UUID.toText(await g.new());
+  };
 
   // Initializing Migration state for migrating to future versions
   stable var icrc7_migration_state = ICRC7.init(

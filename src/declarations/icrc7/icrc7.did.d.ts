@@ -110,6 +110,7 @@ export interface Example {
   >,
   'create_library' : ActorMethod<[CreateLibraryRequest], Result>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
+  'get_num' : ActorMethod<[], number>,
   'get_tip' : ActorMethod<[], Tip>,
   'get_user_libraries' : ActorMethod<[Account__1], Array<Library>>,
   'get_user_library_ids' : ActorMethod<[Account__1], Array<LibraryID>>,
@@ -117,6 +118,11 @@ export interface Example {
     [Account__1],
     Array<[] | [Array<[string, Value]>]>
   >,
+  'get_users_from_accounts' : ActorMethod<
+    [Array<Account__1>],
+    Array<UserProfile>
+  >,
+  'get_users_from_ids' : ActorMethod<[Array<bigint>], Array<UserProfile>>,
   'icrc10_supported_standards' : ActorMethod<[], SupportedStandards__1>,
   'icrc37_approve_collection' : ActorMethod<
     [Array<ApproveCollectionArg>],
@@ -397,6 +403,12 @@ export type TransferFromResult = { 'Ok' : bigint } |
   { 'Err' : TransferFromError };
 export type TransferResult = { 'Ok' : bigint } |
   { 'Err' : TransferError };
+export interface UserProfile {
+  'name' : string,
+  'email' : string,
+  'account' : Account__1,
+  'image' : string,
+}
 export type Value = { 'Int' : bigint } |
   { 'Map' : Array<[string, Value__1]> } |
   { 'Nat' : bigint } |
