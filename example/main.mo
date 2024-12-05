@@ -101,9 +101,18 @@ shared(_init_msg) actor class Example(_args : {
     owner: Account;
   };
 
+  public type UserProfile = {
+    name: Text;
+    email: Text;
+    image: Text;
+    account: Account;
+  };
+
   // Stable variables
   stable var userslibraries = Map.new<Account, LibraryIDS>();
   stable var libraries = Map.new<LibraryID, Library>();
+  stable var userids = Map.new<Account, Nat>();
+  stable var userprofiles = Map.new<Nat, UserProfile>();
 
 // Library related functions
 
