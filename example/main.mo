@@ -169,10 +169,10 @@ shared(_init_msg) actor class Example(_args : {
     let uuid: Text = await generate_uuid_text();
 
     let user: UserProfile = {
-      name: user_req.name;
-      email: user_req.email;
-      image: user_req.image;
-      account: Account;
+      name= user_req.name;
+      email= user_req.email;
+      image= user_req.image;
+      account= account;
     };
 
     // Map Account to uuid
