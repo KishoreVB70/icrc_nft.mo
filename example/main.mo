@@ -144,6 +144,18 @@ shared(_init_msg) actor class Example(_args : {
     return get_users(user_ids);
   };
 
+  public query  func get_user_id(account: Account): async Result.Result<Text, Text> {
+    let user_id: ?Text = Map.get(userids, ahash, account);
+    switch (user_id) {
+      case (?val) {
+        return (#ok(val));
+      };
+      case (null) {
+        return #err("Non existent profile");
+      }
+    }
+  };
+
   private func get_users(user_ids: [Text]): [UserProfile] {
     let users = Vec.new<UserProfile>();
     for (user_id in user_ids.vals()) {
