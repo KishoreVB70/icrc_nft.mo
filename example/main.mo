@@ -114,6 +114,27 @@ shared(_init_msg) actor class Example(_args : {
   stable var userids = Map.new<Account, Nat>();
   stable var userprofiles = Map.new<Nat, UserProfile>();
 
+// User related functions
+  // Get user from ID
+  public query func get_users_from_id(user_ids: [Nat]): async [UserProfile] {
+    let users = Vec.new<UserProfile>();
+    for (user_id in user_ids.vals()) {
+      let user: ?UserProfile = Map.get(userprofiles, nhash, user_id);
+      switch user {
+        case (?val) {
+          Vec.add(users, val);
+        };
+        case (null) {};
+      };
+    };
+    return Vec.toArray(users);
+  };
+
+  // Get user from Account
+
+  // Create user
+
+
 // Library related functions
 
   // Create a library
