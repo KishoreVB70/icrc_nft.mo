@@ -35,6 +35,7 @@ import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
 import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
+import Nat32 "mo:base/Nat32";
 
 
 
@@ -428,6 +429,44 @@ shared(_init_msg) actor class Example(_args : {
     let ids: [LibraryID] = get_user_library_ids_private(user);
     let libraries = get_libraries_private(ids);
     return libraries;
+  };
+
+  // Update the downloads of an NFT
+  // Only admin can access
+  // Set to take a variable to allow batch updates in the future
+  public shared(msg) func update_downloads(
+    nft_id: Nat, downloads: Nat32
+  ): async Result.Result<Bool, Text> {
+    // Admin check
+    if (msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
+
+    // Token must exist
+    switch( icrc7().get_token_owner_canonical(nft_id) ){
+      case(#ok(_val)) {};
+      case (#err(_msg)) return #err("Invalid Tokenid");
+    };
+
+
+    let update_request: ICRC7.UpdateNFTRequest = 
+    [
+      {
+        token_id = nft_id;
+        created_at_time = null;
+        memo = null;
+        updates = [
+          {
+            name = "downloads";
+            mode = #Set(#Nat32(downloads));
+          }
+        ];
+      }
+    ];
+
+    let result = icrc7().update_nfts<system>(msg.caller, update_request);
+    switch (result) {
+      case (#ok(_val)) return #ok(true);
+      case (#err(error)) return #err(error);
+    };
   };
 
   public shared(msg) func mint_nft(
