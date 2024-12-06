@@ -94,6 +94,7 @@ shared(_init_msg) actor class Example(_args : {
     description: Text;
     thumbnail: Text;
     owner: Account;
+    creator_name: Text;
     nft_ids: [Nat];
   };
 
@@ -101,6 +102,7 @@ shared(_init_msg) actor class Example(_args : {
     name: Text;
     description: Text;
     thumbnail: Text;
+    creator_name: Text;
     owner: Account;
   };
 
@@ -220,6 +222,7 @@ shared(_init_msg) actor class Example(_args : {
       description = libreq.description;
       library_id = uuid;
       name = libreq.name;
+      creator_name = libreq.creator_name;
       owner = libreq.owner;
       thumbnail = libreq.thumbnail;
       nft_ids = [];
@@ -323,12 +326,13 @@ shared(_init_msg) actor class Example(_args : {
             let arr: [Nat] = Array.filter<Nat>(val.nft_ids, func x = x!= nft_id);
 
             let updated_lib: Library = {
-              description = val.description;
               library_id = val.library_id;
               name = val.name;
-              nft_ids = arr;
+              description = val.description;
               owner = val.owner;
+              creator_name = val.creator_name;
               thumbnail = val.thumbnail;
+              nft_ids = arr;
             };
 
             Map.set(libraries, nhash, lib_id_from, updated_lib);
@@ -372,6 +376,7 @@ shared(_init_msg) actor class Example(_args : {
           library_id = val.library_id;
           name = val.name;
           nft_ids = Buffer.toArray(buffer);
+          creator_name = val.creator_name;
           owner = val.owner;
           thumbnail = val.thumbnail;
         };
