@@ -93,6 +93,7 @@ export interface CollectionApproval {
   'spender' : Account__3,
 }
 export interface CreateLibraryRequest {
+  'creator_name' : string,
   'thumbnail' : string,
   'owner' : Account__1,
   'name' : string,
@@ -108,16 +109,16 @@ export interface DataCertificate {
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'burn_nft' : ActorMethod<[Array<bigint>], Result_2>,
+  'burn_nft' : ActorMethod<[Array<bigint>], Result>,
   'change_library' : ActorMethod<
     [Account__1, [] | [LibraryID], LibraryID, bigint],
-    Result_2
+    Result
   >,
-  'create_library' : ActorMethod<[CreateLibraryRequest], Result>,
-  'create_user' : ActorMethod<[Account__1, CreateUserRequest], Result_1>,
+  'create_library' : ActorMethod<[CreateLibraryRequest], Result_1>,
+  'create_user' : ActorMethod<[Account__1, CreateUserRequest], Result_2>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
   'get_tip' : ActorMethod<[], Tip>,
-  'get_user_id' : ActorMethod<[Account__1], Result_1>,
+  'get_user_id' : ActorMethod<[Account__1], Result_2>,
   'get_user_libraries' : ActorMethod<[Account__1], Array<Library>>,
   'get_user_library_ids' : ActorMethod<[Account__1], Array<LibraryID>>,
   'get_user_nft_metadatas' : ActorMethod<
@@ -201,7 +202,8 @@ export interface Example {
     Array<[] | [TransferResult]>
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
-  'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], Result>,
+  'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], Result_1>,
+  'update_downloads' : ActorMethod<[bigint, number], Result>,
 }
 export interface GetArchivesArgs { 'from' : [] | [Principal] }
 export type GetArchivesResult = Array<GetArchivesResultItem>;
@@ -275,6 +277,7 @@ export interface IsApprovedArg {
   'spender' : Account__3,
 }
 export interface Library {
+  'creator_name' : string,
   'thumbnail' : string,
   'owner' : Account__1,
   'name' : string,
@@ -315,11 +318,11 @@ export interface PropertyShared {
   'name' : string,
   'immutable' : boolean,
 }
-export type Result = { 'ok' : bigint } |
+export type Result = { 'ok' : boolean } |
   { 'err' : string };
-export type Result_1 = { 'ok' : string } |
+export type Result_1 = { 'ok' : bigint } |
   { 'err' : string };
-export type Result_2 = { 'ok' : boolean } |
+export type Result_2 = { 'ok' : string } |
   { 'err' : string };
 export interface RevokeCollectionApprovalArg {
   'memo' : [] | [Uint8Array | number[]],

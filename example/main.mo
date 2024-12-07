@@ -560,13 +560,13 @@ shared(_init_msg) actor class Example(_args : {
     */
   };
 
-  public func get_user_nft_metadatas(user: Account): async [?[(Text, Value)]] {
+  public query func get_user_nft_metadatas(user: Account): async [?[(Text, Value)]] {
     // 1) Get all the token ids of the user
     let token_ids = icrc7().get_tokens_of_paginated(user, null, null);
     // 2) Get the metadata
     return icrc7().token_metadata(token_ids);
   };
-
+  
   // Function to generate unique id
   private func generate_uuid_nat(): async Nat {
     let g = Source.Source();
