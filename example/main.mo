@@ -5,14 +5,17 @@ import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Nat "mo:base/Nat";
 import D "mo:base/Debug";
+import Nat8 "mo:base/Nat8";
+import Text "mo:base/Text";
+import Nat32 "mo:base/Nat32";
+import Result "mo:base/Result";
+
+// External data structures
 import Map "mo:map/Map";
 import Set "mo:map/Set";
-// import { n32hash } "mo:map/Map";
 import { nhash } "mo:map/Map";
 import { thash } "mo:map/Map";
-import Result "mo:base/Result";
 import Vec "mo:vector";
-
 
 // Certified data for ICRC-3
 import CertifiedData "mo:base/CertifiedData";
@@ -21,29 +24,21 @@ import CertTree "mo:cert/CertTree";
 
 // Standards
 import ICRC7 "mo:icrc7-mo";
-import ICRC37 "mo:icrc37-mo";
 import ICRC3 "mo:icrc3-mo";
 import {ahash} "types";
 
 // Default init args
 import ICRC7Default "./initial_state/icrc7";
-import ICRC37Default "./initial_state/icrc37";
 import ICRC3Default "./initial_state/icrc3";
 
 // UUID
 import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
-import Nat8 "mo:base/Nat8";
-import Text "mo:base/Text";
-import Nat32 "mo:base/Nat32";
-
-
 
 
 // _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Example(_args : {
   icrc7_args: ?ICRC7.InitArgs;
-  icrc37_args: ?ICRC37.InitArgs;
   icrc3_args: ICRC3.InitArgs;
 }) = this {
 
@@ -56,7 +51,6 @@ shared(_init_msg) actor class Example(_args : {
   type SetNFTRequest = ICRC7.SetNFTRequest;
   type SetNFTItemRequest = ICRC7.SetNFTItemRequest;
   type NFTInput = ICRC7.NFTInput;
-
   type OwnerOfResponse =                    ICRC7.Service.OwnerOfResponse;
   type OwnerOfRequest =                    ICRC7.Service.OwnerOfRequest;
   type TransferArgs =                     ICRC7.Service.TransferArg;
@@ -64,23 +58,6 @@ shared(_init_msg) actor class Example(_args : {
   type TransferError =                    ICRC7.Service.TransferError;
   type BalanceOfRequest =                 ICRC7.Service.BalanceOfRequest;
   type BalanceOfResponse =                ICRC7.Service.BalanceOfResponse;
-  type TokenApproval =                    ICRC37.Service.TokenApproval;
-  type CollectionApproval =               ICRC37.Service.CollectionApproval;
-  type ApprovalInfo =                     ICRC37.Service.ApprovalInfo;
-  type ApproveTokenResult =                 ICRC37.Service.ApproveTokenResult;
-  type ApproveTokenArg =                   ICRC37.Service.ApproveTokenArg; 
-  type ApproveCollectionArg =              ICRC37.Service.ApproveCollectionArg; 
-  type IsApprovedArg =                     ICRC37.Service.IsApprovedArg;
-
-  type ApproveCollectionResult =       ICRC37.Service.ApproveCollectionResult;
-  type RevokeTokenApprovalArg =                 ICRC37.Service.RevokeTokenApprovalArg;
-
-  type RevokeCollectionApprovalArg =             ICRC37.Service.RevokeCollectionApprovalArg;
-
-  type TransferFromArg =                 ICRC37.Service.TransferFromArg;
-  type TransferFromResult =             ICRC37.Service.TransferFromResult;
-  type RevokeTokenApprovalResult =             ICRC37.Service.RevokeTokenApprovalResult;
-  type RevokeCollectionApprovalResult =         ICRC37.Service.RevokeCollectionApprovalResult;
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
@@ -481,6 +458,16 @@ shared(_init_msg) actor class Example(_args : {
     // 1) Generate UUID
     let uuid: Nat = await generate_uuid_nat();
 
+    // let exampleMeta : NFTInput = #Class([
+    //   { name = "name"; value = #Text("filename"); immutable = true },
+    //   { name = "music_key"; value = #Text("C major"); immutable = true },
+    //   { name = "genre"; value = #Text("Indie"); immutable = true },
+    //   { name = "duration"; value = #Nat32(300); immutable = true },
+    //   { name = "creator_name"; value = #Text("John Doe"); immutable = true },
+    //   { name = "audio_identifier"; value = #Text("abc123"); immutable = false },
+    //   { name = "audio_provider"; value = #Text("Pinata IPFS"); immutable = false }
+    // ]);
+
     let req: SetNFTItemRequest = {
       token_id= uuid;
       owner= owner;
@@ -590,21 +577,11 @@ shared(_init_msg) actor class Example(_args : {
     switch(_args.icrc7_args){
       case(null) ICRC7Default.defaultConfig(init_msg.caller);
       case(?val) val;
-      }, 
-    init_msg.caller);
+    }, 
+    init_msg.caller
+  );
 
   let #v0_1_0(#data(icrc7_state_current)) = icrc7_migration_state;
-
-  stable var icrc37_migration_state = ICRC37.init(
-    ICRC37.initialState() , 
-    #v0_1_0(#id), 
-    switch(_args.icrc37_args){
-      case(null) ICRC37Default.defaultConfig(init_msg.caller);
-      case(?val) val;
-      }, 
-    init_msg.caller);
-
-  let #v0_1_0(#data(icrc37_state_current)) = icrc37_migration_state;
 
   stable var icrc3_migration_state = ICRC3.init(
     ICRC3.initialState() ,
@@ -612,22 +589,19 @@ shared(_init_msg) actor class Example(_args : {
     switch(_args.icrc3_args){
       case(null) ICRC3Default.defaultConfig(init_msg.caller);
       case(?val) ?val : ICRC3.InitArgs;
-      }, 
-    init_msg.caller);
+    },
+   
+    init_msg.caller
+  );
 
   let #v0_1_0(#data(icrc3_state_current)) = icrc3_migration_state;
 
   private var _icrc7 : ?ICRC7.ICRC7 = null;
-  private var _icrc37 : ?ICRC37.ICRC37 = null;
   private var _icrc3 : ?ICRC3.ICRC3 = null;
 
   // Obtaining the current state
   private func get_icrc7_state() : ICRC7.CurrentState {
     return icrc7_state_current;
-  };
-
-  private func get_icrc37_state() : ICRC37.CurrentState {
-    return icrc37_state_current;
   };
 
   // Unused - Why?
@@ -665,12 +639,6 @@ shared(_init_msg) actor class Example(_args : {
     };
 
     for(thisItem in icrc7().supported_blocktypes().vals()){
-      if(Buffer.indexOf<ICRC3.BlockType>({block_type = thisItem.0; url=thisItem.1;}, supportedBlocks, blockequal) == null){
-        supportedBlocks.add({block_type = thisItem.0; url = thisItem.1});
-      };
-    };
-
-    for(thisItem in icrc37().supported_blocktypes().vals()){
       if(Buffer.indexOf<ICRC3.BlockType>({block_type = thisItem.0; url=thisItem.1;}, supportedBlocks, blockequal) == null){
         supportedBlocks.add({block_type = thisItem.0; url = thisItem.1});
       };
@@ -731,36 +699,12 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
-  private func get_icrc37_environment() : ICRC37.Environment {
-    {
-      canister = get_canister;
-      get_time = get_time;
-      refresh_state = get_icrc37_state;
-      icrc7 = icrc7();
-      can_transfer_from = null;
-      can_approve_token = null;
-      can_approve_collection = null;
-      can_revoke_token_approval = null;
-      can_revoke_collection_approval = null;
-    };
-  };
 
   func icrc7() : ICRC7.ICRC7 {
     switch(_icrc7){
       case(null){
         let initclass : ICRC7.ICRC7 = ICRC7.ICRC7(?icrc7_migration_state, Principal.fromActor(this), get_icrc7_environment());
         _icrc7 := ?initclass;
-        initclass;
-      };
-      case(?val) val;
-    };
-  };
-
-  func icrc37() : ICRC37.ICRC37 {
-    switch(_icrc37){
-      case(null){
-        let initclass : ICRC37.ICRC37 = ICRC37.ICRC37(?icrc37_migration_state, Principal.fromActor(this), get_icrc37_environment());
-        _icrc37 := ?initclass;
         initclass;
       };
       case(?val) val;
@@ -840,10 +784,6 @@ shared(_init_msg) actor class Example(_args : {
     return icrc7().get_ledger_info().supply_cap;
   };
 
-  public query func icrc37_max_approvals_per_token_or_collection() : async ?Nat {
-    return icrc37().max_approvals_per_token_or_collection();
-  };
-
   public query func icrc7_max_query_batch_size() : async ?Nat {
     return icrc7().max_query_batch_size();
   };
@@ -864,18 +804,13 @@ shared(_init_msg) actor class Example(_args : {
     return icrc7().atomic_batch_transfers();
   };
 
-  public query func icrc37_max_revoke_approvals() : async ?Nat {
-    return ?icrc37().get_ledger_info().max_revoke_approvals;
-  };
 
   public query func icrc7_collection_metadata() : async [(Text, Value)] {
 
     let ledger_info = icrc7().collection_metadata();
-    let ledger_info37 = icrc37().metadata();
     let results = Vec.new<(Text, Value)>();
 
     Vec.addFromIter(results, ledger_info.vals());
-    Vec.addFromIter(results, ledger_info37.vals());
 
     ///add any addtional metadata here
     //Vec.addFromIter(results, [
@@ -913,51 +848,11 @@ shared(_init_msg) actor class Example(_args : {
     return icrc7().get_tokens_of_paginated(account, prev, take);
   };
 
-  /////////
-  // ICRC-37 endpoints
-  /////////
-  public query func icrc37_is_approved(args: [IsApprovedArg]) : async [Bool] {
-    return icrc37().is_approved(args);
-  };
-
-  public query func icrc37_get_token_approvals(
-    token_ids: [Nat], prev: ?TokenApproval, take: ?Nat
-  ) : async [TokenApproval] {
-    
-    return icrc37().get_token_approvals(token_ids, prev, take);
-  };
-
-  public query func icrc37_get_collection_approvals(
-    owner : Account, prev: ?CollectionApproval, take: ?Nat
-  ) : async [CollectionApproval] {
-    
-    return icrc37().get_collection_approvals(owner, prev, take);
-  };
-
   // Icrc-10 is the standard of exhibiting the standards the contract implements
   public query func icrc10_supported_standards() : async ICRC7.SupportedStandards {
     return [
       {name = "ICRC-7"; url = "https://github.com/dfinity/ICRC/ICRCs/ICRC-7"},
       {name = "ICRC-37"; url = "https://github.com/dfinity/ICRC/ICRCs/ICRC-37"}];
-  };
-
-
-  //Update calls
-
-  public shared(msg) func icrc37_approve_tokens(
-    args: [ApproveTokenArg]
-  ) : async [?ApproveTokenResult] {
-
-    switch(icrc37().approve_transfers<system>(msg.caller, args)){
-        case(#ok(val)) val;
-        case(#err(err)) D.trap(err);
-      };
-  };
-
-  public shared(msg) func icrc37_approve_collection(
-    approvals: [ApproveCollectionArg]
-  ) : async [?ApproveCollectionResult] {
-      icrc37().approve_collection<system>( msg.caller, approvals);
   };
 
   // System capabililties not provided to the functions, Why?
@@ -966,24 +861,6 @@ shared(_init_msg) actor class Example(_args : {
     args: [TransferArgs]
   ) : async [?TransferResult] {
       icrc7().transfer<system>(msg.caller, args);
-  };
-
-  public shared(msg) func icrc37_transfer_from<system>(
-    args: [TransferFromArg]
-  ) : async [?TransferFromResult] {
-      icrc37().transfer_from<system>(msg.caller, args)
-  };
-
-  public shared(msg) func icrc37_revoke_token_approvals<system>(
-    args: [RevokeTokenApprovalArg]
-  ) : async [?RevokeTokenApprovalResult] {
-      icrc37().revoke_token_approvals<system>(msg.caller, args);
-  };
-
-  public shared(msg) func icrc37_revoke_collection_approvals(
-    args: [RevokeCollectionApprovalArg]
-  ) : async [?RevokeCollectionApprovalResult] {
-      icrc37().revoke_collection_approvals<system>(msg.caller, args);
   };
 
   /////////
