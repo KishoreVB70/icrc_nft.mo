@@ -62,6 +62,17 @@ shared(_init_msg) actor class Example(_args : {
   stable var init_msg = _init_msg; //preserves original initialization;
 
   // Data types for Management
+  public type MintNFTRequest = {
+    library_id: Nat;
+    name: Text;
+    genre: Text;
+    music_key: Text;
+    duration: Nat32;
+    creator_name: Text;
+    audio_provider: Text;
+    audio_identifier: Text;
+  };
+
   public type LibraryID = Nat;
   type LibraryIDS = Set.Set<LibraryID>;
 
@@ -452,30 +463,31 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   public shared(msg) func mint_nft(
-    owner: ?Account, metadata: NFTInput
+    owner: ?Account, nft_data: MintNFTRequest
   ) : async Result.Result<Nat, Text> {
 
     // 1) Generate UUID
     let uuid: Nat = await generate_uuid_nat();
 
-    // let exampleMeta : NFTInput = #Class([
-    //   { name = "name"; value = #Text("filename"); immutable = true },
-    //   { name = "music_key"; value = #Text("C major"); immutable = true },
-    //   { name = "genre"; value = #Text("Indie"); immutable = true },
-    //   { name = "duration"; value = #Nat32(300); immutable = true },
-    //   { name = "creator_name"; value = #Text("John Doe"); immutable = true },
-    //   { name = "audio_identifier"; value = #Text("abc123"); immutable = false },
-    //   { name = "audio_provider"; value = #Text("Pinata IPFS"); immutable = false }
-    // ]);
+    let exampleMeta : NFTInput = #Class([
+      { name = "name"; value = #Text(nft_data.name); immutable = true },
+      { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
+      { name = "genre"; value = #Text(nft_data.genre); immutable = true },
+      { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
+      { name = "creator_name"; value = #Text(nft_data.creator_name); immutable = true },
+      { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
+      { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false }
+    ]);
 
     let req: SetNFTItemRequest = {
       token_id= uuid;
       owner= owner;
-      metadata = metadata;
+      metadata = exampleMeta;
       created_at_time = null;
       memo = null;
       override = true;
     };
+
 
     // 2) Add that into the metadata
 
