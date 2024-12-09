@@ -61,7 +61,6 @@ shared(_init_msg) actor class Example(_args : {
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
-  // Data types for Management
   public type MintNFTRequest = {
     name: Text;
     description: Text;
@@ -115,7 +114,7 @@ shared(_init_msg) actor class Example(_args : {
   stable var userprofiles = Map.new<Text, UserProfile>();
 
 // User related functions
-  // Get user from ID
+  // Get users from IDs
   public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
     return get_users(user_ids);
   };
@@ -174,7 +173,7 @@ shared(_init_msg) actor class Example(_args : {
       case (?_val) {
         return #err("User already exists");
       };
-      case null{}
+      case null{};
     };
 
     let uuid: Text = await generate_uuid_text();
@@ -225,12 +224,12 @@ shared(_init_msg) actor class Example(_args : {
 
     switch userlibs {
       case (?val) {
-        // User account exists, and hence add the new library to user account
+        // User already has libraries, hence add the new library to user account
         let _result: Bool = Set.put(val, nhash, library.library_id);
         let _result1 = Map.put(userslibraries, ahash, library.owner, val);
       };
       case (null) {
-        // User account doesn't exist, hence add new account to the mapping
+        // First library of the user, hence add to the mapping
         let newSet = Set.new<LibraryID>();
         let _result: Bool = Set.put(newSet, nhash, library.library_id);
         let _result1 = Map.put(userslibraries, ahash, library.owner, newSet);
@@ -261,7 +260,6 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Change library or assign a  library
-  // Access restricted to only the admin
   public shared(msg) func change_library(
     owner: Account, library_id_from: ?LibraryID,
     library_id_to: LibraryID, nft_id: Nat
@@ -269,8 +267,7 @@ shared(_init_msg) actor class Example(_args : {
     // Checks
 
     // 1) Caller must be the admin of the NFT collection
-    let admin = icrc7().get_state().owner;
-    if (admin != msg.caller) return #err("Unauthorized caller");
+    if (icrc7().get_state().owner != msg.caller) return #err("Unauthorized caller");
 
     // 2) Account must be the owner of the NFT
     switch( icrc7().get_token_owner_canonical(nft_id) ){
@@ -283,7 +280,7 @@ shared(_init_msg) actor class Example(_args : {
       case _ return #err("Invalid Tokenid");
     };
 
-    // 3) Account must be the owner of the library two
+    // 3) Account must be the owner of the library to
     let lib_quer: ?Library = Map.get(libraries, nhash, library_id_to);
     switch lib_quer {
       case(?val) {
@@ -307,10 +304,7 @@ shared(_init_msg) actor class Example(_args : {
           case (?val) {
             // Remove item
             // Warn: O(N) operation
-            // Couldn't implement a hash set due to stable memory limitation
-            // let new_list = List.filter<Nat>(val.nft_ids, func(item: Nat): Bool{
-            //   item != nft_id
-            // });
+            // Couldn't implement a hash set due to stable memory limitation;
 
             let arr: [Nat] = Array.filter<Nat>(val.nft_ids, func x = x!= nft_id);
 
@@ -356,7 +350,6 @@ shared(_init_msg) actor class Example(_args : {
         // Add item
         // Warn: O(n) operation, could not implement better data structure due to stable
         // structure limitation
-        // let new_list = List.push(nft_id, val.nft_ids);
         let buffer = Buffer.fromArray<Nat>(val.nft_ids);
         buffer.add(nft_id);
 
@@ -419,7 +412,6 @@ shared(_init_msg) actor class Example(_args : {
 
   // Get list of libraries of users
   public query func get_user_libraries(user: Account): async [Library] {
-    // 1) Get user ids
     let ids: [LibraryID] = get_user_library_ids_private(user);
     let libraries = get_libraries_private(ids);
     return libraries;
@@ -431,7 +423,6 @@ shared(_init_msg) actor class Example(_args : {
   public shared(msg) func update_downloads(
     nft_id: Nat, downloads: Nat32
   ): async Result.Result<Bool, Text> {
-    // Admin check
     if (msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
 
     // Token must exist
@@ -491,8 +482,9 @@ shared(_init_msg) actor class Example(_args : {
       { name = "description"; value = #Text(nft_data.description); immutable = true },
       { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
       { name = "genre"; value = #Text(nft_data.genre); immutable = true },
-      { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
       { name = "creator_name"; value = #Text(nft_data.creator_name); immutable = true },
+      { name = "downloads"; value = #Nat32(0); immutable = false },
+      { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
       { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
       { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false }
     ]);
