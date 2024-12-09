@@ -63,11 +63,12 @@ shared(_init_msg) actor class Example(_args : {
 
   // Data types for Management
   public type MintNFTRequest = {
-    library_id: Nat;
     name: Text;
+    description: Text;
     genre: Text;
-    music_key: Text;
+    library_id: Nat;
     duration: Nat32;
+    music_key: Text;
     creator_name: Text;
     audio_provider: Text;
     audio_identifier: Text;
@@ -463,14 +464,30 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   public shared(msg) func mint_nft(
-    owner: ?Account, nft_data: MintNFTRequest
+    owner: Account, nft_data: MintNFTRequest
   ) : async Result.Result<Nat, Text> {
 
-    // 1) Generate UUID
+    // 1) Check nft owner is the owner of the library
+    let lib_quer: ?Library = Map.get(libraries, nhash, nft_data.library_id);
+    switch lib_quer {
+      case(?val) {
+        if (val.owner != owner) {
+          return #err("Unauthorized library");
+        };
+      };
+      case(null) {
+        return #err("Invalid library id");
+      };
+    };
+
+    // Generate UUID
     let uuid: Nat = await generate_uuid_nat();
 
-    let exampleMeta : NFTInput = #Class([
+    // Generate metadata
+    let metadata : NFTInput = #Class([
+      { name = "library_id"; value = #Nat(nft_data.library_id); immutable = false },
       { name = "name"; value = #Text(nft_data.name); immutable = true },
+      { name = "description"; value = #Text(nft_data.description); immutable = true },
       { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
       { name = "genre"; value = #Text(nft_data.genre); immutable = true },
       { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
@@ -481,8 +498,8 @@ shared(_init_msg) actor class Example(_args : {
 
     let req: SetNFTItemRequest = {
       token_id= uuid;
-      owner= owner;
-      metadata = exampleMeta;
+      owner= ?owner;
+      metadata = metadata;
       created_at_time = null;
       memo = null;
       override = true;
@@ -490,13 +507,33 @@ shared(_init_msg) actor class Example(_args : {
 
 
     // 2) Add that into the metadata
-
-    // Official function provided by ICRC-7 to mint an NFT
-    // Must be careful as calling set_nfts on existing token will replace it with new metadata
-    // Only the deployer can call this function
     switch(icrc7().set_nfts<system>(msg.caller, [req], true)){
-      // The value is just the transaction id, not required
+      // The returned value is just the transaction id, not required
       case(#ok(_val)) {
+        // Add NFT to the library
+        switch (lib_quer) {
+          case (?val) {
+            // Add item
+            // Warn: O(n) operation, could not implement better data structure due to stable
+            // structure limitation
+            // let new_list = List.push(nft_id, val.nft_ids);
+            let buffer = Buffer.fromArray<Nat>(val.nft_ids);
+            buffer.add(uuid);
+
+            let updated_lib: Library = {
+              description = val.description;
+              library_id = val.library_id;
+              name = val.name;
+              nft_ids = Buffer.toArray(buffer);
+              creator_name = val.creator_name;
+              owner = val.owner;
+              thumbnail = val.thumbnail;
+            };
+
+            Map.set(libraries, nhash, nft_data.library_id, updated_lib);
+          };
+          case _ {};
+        };
         return #ok(uuid);
       };
       case(#err(err)) #err(err)
