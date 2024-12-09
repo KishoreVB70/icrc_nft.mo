@@ -14,44 +14,6 @@ export interface Account__2 {
   'owner' : Principal,
   'subaccount' : [] | [Uint8Array | number[]],
 }
-export interface Account__3 {
-  'owner' : Principal,
-  'subaccount' : [] | [Subaccount__1],
-}
-export interface ApprovalInfo {
-  'memo' : [] | [Uint8Array | number[]],
-  'from_subaccount' : [] | [Uint8Array | number[]],
-  'created_at_time' : [] | [bigint],
-  'expires_at' : [] | [bigint],
-  'spender' : Account__3,
-}
-export interface ApproveCollectionArg { 'approval_info' : ApprovalInfo }
-export type ApproveCollectionError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'Duplicate' : { 'duplicate_of' : bigint } } |
-  { 'InvalidSpender' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'GenericBatchError' : { 'message' : string, 'error_code' : bigint } } |
-  { 'TooOld' : null };
-export type ApproveCollectionResult = { 'Ok' : bigint } |
-  { 'Err' : ApproveCollectionError };
-export interface ApproveTokenArg {
-  'token_id' : bigint,
-  'approval_info' : ApprovalInfo,
-}
-export type ApproveTokenError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'Duplicate' : { 'duplicate_of' : bigint } } |
-  { 'InvalidSpender' : null } |
-  { 'NonExistingTokenId' : null } |
-  { 'Unauthorized' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'GenericBatchError' : { 'message' : string, 'error_code' : bigint } } |
-  { 'TooOld' : null };
-export type ApproveTokenResult = { 'Ok' : bigint } |
-  { 'Err' : ApproveTokenError };
 export interface ArchivedTransactionResponse {
   'args' : Array<TransactionRange__1>,
   'callback' : GetTransactionsFn,
@@ -60,38 +22,6 @@ export type BalanceOfRequest = Array<Account__2>;
 export type BalanceOfResponse = Array<bigint>;
 export interface BlockType { 'url' : string, 'block_type' : string }
 export interface BlockType__1 { 'url' : string, 'block_type' : string }
-export type CandyShared = { 'Int' : bigint } |
-  { 'Map' : Array<[string, CandyShared]> } |
-  { 'Nat' : bigint } |
-  { 'Set' : Array<CandyShared> } |
-  { 'Nat16' : number } |
-  { 'Nat32' : number } |
-  { 'Nat64' : bigint } |
-  { 'Blob' : Uint8Array | number[] } |
-  { 'Bool' : boolean } |
-  { 'Int8' : number } |
-  { 'Ints' : Array<bigint> } |
-  { 'Nat8' : number } |
-  { 'Nats' : Array<bigint> } |
-  { 'Text' : string } |
-  { 'Bytes' : Uint8Array | number[] } |
-  { 'Int16' : number } |
-  { 'Int32' : number } |
-  { 'Int64' : bigint } |
-  { 'Option' : [] | [CandyShared] } |
-  { 'Floats' : Array<number> } |
-  { 'Float' : number } |
-  { 'Principal' : Principal } |
-  { 'Array' : Array<CandyShared> } |
-  { 'ValueMap' : Array<[CandyShared, CandyShared]> } |
-  { 'Class' : Array<PropertyShared> };
-export interface CollectionApproval {
-  'memo' : [] | [Uint8Array | number[]],
-  'from_subaccount' : [] | [Uint8Array | number[]],
-  'created_at_time' : [] | [bigint],
-  'expires_at' : [] | [bigint],
-  'spender' : Account__3,
-}
 export interface CreateLibraryRequest {
   'creator_name' : string,
   'thumbnail' : string,
@@ -109,7 +39,7 @@ export interface DataCertificate {
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'burn_nft' : ActorMethod<[Array<bigint>], Result>,
+  'burn_nft' : ActorMethod<[bigint, bigint], Result>,
   'change_library' : ActorMethod<
     [Account__1, [] | [LibraryID], LibraryID, bigint],
     Result
@@ -131,40 +61,6 @@ export interface Example {
   >,
   'get_users_from_ids' : ActorMethod<[Array<string>], Array<UserProfile>>,
   'icrc10_supported_standards' : ActorMethod<[], SupportedStandards__1>,
-  'icrc37_approve_collection' : ActorMethod<
-    [Array<ApproveCollectionArg>],
-    Array<[] | [ApproveCollectionResult]>
-  >,
-  'icrc37_approve_tokens' : ActorMethod<
-    [Array<ApproveTokenArg>],
-    Array<[] | [ApproveTokenResult]>
-  >,
-  'icrc37_get_collection_approvals' : ActorMethod<
-    [Account__1, [] | [CollectionApproval], [] | [bigint]],
-    Array<CollectionApproval>
-  >,
-  'icrc37_get_token_approvals' : ActorMethod<
-    [Array<bigint>, [] | [TokenApproval], [] | [bigint]],
-    Array<TokenApproval>
-  >,
-  'icrc37_is_approved' : ActorMethod<[Array<IsApprovedArg>], Array<boolean>>,
-  'icrc37_max_approvals_per_token_or_collection' : ActorMethod<
-    [],
-    [] | [bigint]
-  >,
-  'icrc37_max_revoke_approvals' : ActorMethod<[], [] | [bigint]>,
-  'icrc37_revoke_collection_approvals' : ActorMethod<
-    [Array<RevokeCollectionApprovalArg>],
-    Array<[] | [RevokeCollectionApprovalResult]>
-  >,
-  'icrc37_revoke_token_approvals' : ActorMethod<
-    [Array<RevokeTokenApprovalArg>],
-    Array<[] | [RevokeTokenApprovalResult]>
-  >,
-  'icrc37_transfer_from' : ActorMethod<
-    [Array<TransferFromArg>],
-    Array<[] | [TransferFromResult]>
-  >,
   'icrc3_get_archives' : ActorMethod<[GetArchivesArgs], GetArchivesResult>,
   'icrc3_get_blocks' : ActorMethod<
     [Array<TransactionRange>],
@@ -202,7 +98,7 @@ export interface Example {
     Array<[] | [TransferResult]>
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
-  'mint_nft' : ActorMethod<[[] | [Account__1], NFTInput], Result_1>,
+  'mint_nft' : ActorMethod<[Account__1, MintNFTRequest], Result_1>,
   'update_downloads' : ActorMethod<[bigint, number], Result>,
 }
 export interface GetArchivesArgs { 'from' : [] | [Principal] }
@@ -229,18 +125,8 @@ export interface GetTransactionsResult__1 {
 export type IndexType = { 'Stable' : null } |
   { 'StableTyped' : null } |
   { 'Managed' : null };
-export type InitArgs = [] | [
-  {
-    'deployer' : Principal,
-    'max_approvals' : [] | [bigint],
-    'max_approvals_per_token_or_collection' : [] | [bigint],
-    'settle_to_approvals' : [] | [bigint],
-    'max_revoke_approvals' : [] | [bigint],
-    'collection_approval_requires_token' : [] | [boolean],
-  }
-];
-export type InitArgs__1 = [] | [InitArgs__2];
-export interface InitArgs__2 {
+export type InitArgs = [] | [InitArgs__1];
+export interface InitArgs__1 {
   'maxRecordsToArchive' : bigint,
   'archiveIndexType' : IndexType,
   'maxArchivePages' : bigint,
@@ -251,7 +137,7 @@ export interface InitArgs__2 {
   'archiveControllers' : [] | [[] | [Array<Principal>]],
   'supportedBlocks' : Array<BlockType>,
 }
-export type InitArgs__3 = [] | [
+export type InitArgs__2 = [] | [
   {
     'deployer' : Principal,
     'allow_transfers' : [] | [boolean],
@@ -271,11 +157,6 @@ export type InitArgs__3 = [] | [
     'symbol' : [] | [string],
   }
 ];
-export interface IsApprovedArg {
-  'token_id' : bigint,
-  'from_subaccount' : [] | [Uint8Array | number[]],
-  'spender' : Account__3,
-}
 export interface Library {
   'creator_name' : string,
   'thumbnail' : string,
@@ -286,92 +167,32 @@ export interface Library {
   'library_id' : LibraryID,
 }
 export type LibraryID = bigint;
-export type NFTInput = { 'Int' : bigint } |
-  { 'Map' : Array<[string, CandyShared]> } |
-  { 'Nat' : bigint } |
-  { 'Set' : Array<CandyShared> } |
-  { 'Nat16' : number } |
-  { 'Nat32' : number } |
-  { 'Nat64' : bigint } |
-  { 'Blob' : Uint8Array | number[] } |
-  { 'Bool' : boolean } |
-  { 'Int8' : number } |
-  { 'Ints' : Array<bigint> } |
-  { 'Nat8' : number } |
-  { 'Nats' : Array<bigint> } |
-  { 'Text' : string } |
-  { 'Bytes' : Uint8Array | number[] } |
-  { 'Int16' : number } |
-  { 'Int32' : number } |
-  { 'Int64' : bigint } |
-  { 'Option' : [] | [CandyShared] } |
-  { 'Floats' : Array<number> } |
-  { 'Float' : number } |
-  { 'Principal' : Principal } |
-  { 'Array' : Array<CandyShared> } |
-  { 'ValueMap' : Array<[CandyShared, CandyShared]> } |
-  { 'Class' : Array<PropertyShared> };
+export interface MintNFTRequest {
+  'duration' : number,
+  'creator_name' : string,
+  'name' : string,
+  'audio_identifier' : string,
+  'description' : string,
+  'genre' : string,
+  'library_id' : bigint,
+  'music_key' : string,
+  'audio_provider' : string,
+}
 export type OwnerOfRequest = Array<bigint>;
 export type OwnerOfResponse = Array<[] | [Account__2]>;
-export interface PropertyShared {
-  'value' : CandyShared,
-  'name' : string,
-  'immutable' : boolean,
-}
 export type Result = { 'ok' : boolean } |
   { 'err' : string };
 export type Result_1 = { 'ok' : bigint } |
   { 'err' : string };
 export type Result_2 = { 'ok' : string } |
   { 'err' : string };
-export interface RevokeCollectionApprovalArg {
-  'memo' : [] | [Uint8Array | number[]],
-  'from_subaccount' : [] | [Uint8Array | number[]],
-  'created_at_time' : [] | [bigint],
-  'spender' : [] | [Account__3],
-}
-export type RevokeCollectionApprovalError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'Duplicate' : { 'duplicate_of' : bigint } } |
-  { 'Unauthorized' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'ApprovalDoesNotExist' : null } |
-  { 'GenericBatchError' : { 'message' : string, 'error_code' : bigint } } |
-  { 'TooOld' : null };
-export type RevokeCollectionApprovalResult = { 'Ok' : bigint } |
-  { 'Err' : RevokeCollectionApprovalError };
-export interface RevokeTokenApprovalArg {
-  'token_id' : bigint,
-  'memo' : [] | [Uint8Array | number[]],
-  'from_subaccount' : [] | [Uint8Array | number[]],
-  'created_at_time' : [] | [bigint],
-  'spender' : [] | [Account__3],
-}
-export type RevokeTokenApprovalError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'Duplicate' : { 'duplicate_of' : bigint } } |
-  { 'NonExistingTokenId' : null } |
-  { 'Unauthorized' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'ApprovalDoesNotExist' : null } |
-  { 'GenericBatchError' : { 'message' : string, 'error_code' : bigint } } |
-  { 'TooOld' : null };
-export type RevokeTokenApprovalResult = { 'Ok' : bigint } |
-  { 'Err' : RevokeTokenApprovalError };
 export type Subaccount = Uint8Array | number[];
-export type Subaccount__1 = Uint8Array | number[];
 export type SupportedStandards = Array<{ 'url' : string, 'name' : string }>;
 export type SupportedStandards__1 = Array<{ 'url' : string, 'name' : string }>;
 export interface Tip {
   'last_block_index' : Uint8Array | number[],
   'hash_tree' : Uint8Array | number[],
   'last_block_hash' : Uint8Array | number[],
-}
-export interface TokenApproval {
-  'token_id' : bigint,
-  'approval_info' : ApprovalInfo,
 }
 export interface TransactionRange { 'start' : bigint, 'length' : bigint }
 export interface TransactionRange__1 { 'start' : bigint, 'length' : bigint }
@@ -392,26 +213,6 @@ export type TransferError = {
   { 'InvalidRecipient' : null } |
   { 'GenericBatchError' : { 'message' : string, 'error_code' : bigint } } |
   { 'TooOld' : null };
-export interface TransferFromArg {
-  'to' : Account__3,
-  'spender_subaccount' : [] | [Uint8Array | number[]],
-  'token_id' : bigint,
-  'from' : Account__3,
-  'memo' : [] | [Uint8Array | number[]],
-  'created_at_time' : [] | [bigint],
-}
-export type TransferFromError = {
-    'GenericError' : { 'message' : string, 'error_code' : bigint }
-  } |
-  { 'Duplicate' : { 'duplicate_of' : bigint } } |
-  { 'NonExistingTokenId' : null } |
-  { 'Unauthorized' : null } |
-  { 'CreatedInFuture' : { 'ledger_time' : bigint } } |
-  { 'InvalidRecipient' : null } |
-  { 'GenericBatchError' : { 'message' : string, 'error_code' : bigint } } |
-  { 'TooOld' : null };
-export type TransferFromResult = { 'Ok' : bigint } |
-  { 'Err' : TransferFromError };
 export type TransferResult = { 'Ok' : bigint } |
   { 'Err' : TransferError };
 export interface UserProfile {

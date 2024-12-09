@@ -46,37 +46,6 @@ type TransferResult =
    Err: TransferError;
    Ok: nat;
  };
-type TransferFromResult = 
- variant {
-   Err: TransferFromError;
-   Ok: nat;
- };
-type TransferFromError = 
- variant {
-   CreatedInFuture: record {ledger_time: nat64;};
-   Duplicate: record {duplicate_of: nat;};
-   GenericBatchError: record {
-                        error_code: nat;
-                        message: text;
-                      };
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   InvalidRecipient;
-   NonExistingTokenId;
-   TooOld;
-   Unauthorized;
- };
-type TransferFromArg = 
- record {
-   created_at_time: opt nat64;
-   from: Account__3;
-   memo: opt blob;
-   spender_subaccount: opt blob;
-   to: Account__3;
-   token_id: nat;
- };
 type TransferError = 
  variant {
    CreatedInFuture: record {ledger_time: nat64;};
@@ -112,11 +81,6 @@ type TransactionRange =
    length: nat;
    start: nat;
  };
-type TokenApproval = 
- record {
-   approval_info: ApprovalInfo;
-   token_id: nat;
- };
 type Tip = 
  record {
    hash_tree: blob;
@@ -133,66 +97,7 @@ type SupportedStandards =
        name: text;
        url: text;
      };
-type Subaccount__1 = blob;
 type Subaccount = blob;
-type RevokeTokenApprovalResult = 
- variant {
-   Err: RevokeTokenApprovalError;
-   Ok: nat;
- };
-type RevokeTokenApprovalError = 
- variant {
-   ApprovalDoesNotExist;
-   CreatedInFuture: record {ledger_time: nat64;};
-   Duplicate: record {duplicate_of: nat;};
-   GenericBatchError: record {
-                        error_code: nat;
-                        message: text;
-                      };
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   NonExistingTokenId;
-   TooOld;
-   Unauthorized;
- };
-type RevokeTokenApprovalArg = 
- record {
-   created_at_time: opt nat64;
-   from_subaccount: opt blob;
-   memo: opt blob;
-   spender: opt Account__3;
-   token_id: nat;
- };
-type RevokeCollectionApprovalResult = 
- variant {
-   Err: RevokeCollectionApprovalError;
-   Ok: nat;
- };
-type RevokeCollectionApprovalError = 
- variant {
-   ApprovalDoesNotExist;
-   CreatedInFuture: record {ledger_time: nat64;};
-   Duplicate: record {duplicate_of: nat;};
-   GenericBatchError: record {
-                        error_code: nat;
-                        message: text;
-                      };
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   TooOld;
-   Unauthorized;
- };
-type RevokeCollectionApprovalArg = 
- record {
-   created_at_time: opt nat64;
-   from_subaccount: opt blob;
-   memo: opt blob;
-   spender: opt Account__3;
- };
 type Result_2 = 
  variant {
    err: text;
@@ -208,47 +113,19 @@ type Result =
    err: text;
    ok: bool;
  };
-type PropertyShared = 
- record {
-   immutable: bool;
-   name: text;
-   value: CandyShared;
- };
 type OwnerOfResponse = vec opt Account__2;
 type OwnerOfRequest = vec nat;
-type NFTInput = 
- variant {
-   Array: vec CandyShared;
-   Blob: blob;
-   Bool: bool;
-   Bytes: vec nat8;
-   Class: vec PropertyShared;
-   Float: float64;
-   Floats: vec float64;
-   Int: int;
-   Int16: int16;
-   Int32: int32;
-   Int64: int64;
-   Int8: int8;
-   Ints: vec int;
-   Map: vec record {
-              text;
-              CandyShared;
-            };
-   Nat: nat;
-   Nat16: nat16;
-   Nat32: nat32;
-   Nat64: nat64;
-   Nat8: nat8;
-   Nats: vec nat;
-   Option: opt CandyShared;
-   Principal: principal;
-   Set: vec CandyShared;
-   Text: text;
-   ValueMap: vec record {
-                   CandyShared;
-                   CandyShared;
-                 };
+type MintNFTRequest = 
+ record {
+   audio_identifier: text;
+   audio_provider: text;
+   creator_name: text;
+   description: text;
+   duration: nat32;
+   genre: text;
+   library_id: nat;
+   music_key: text;
+   name: text;
  };
 type LibraryID = nat;
 type Library = 
@@ -261,13 +138,7 @@ type Library =
    owner: Account__1;
    thumbnail: text;
  };
-type IsApprovedArg = 
- record {
-   from_subaccount: opt blob;
-   spender: Account__3;
-   token_id: nat;
- };
-type InitArgs__3 = 
+type InitArgs__2 = 
  opt
   record {
     allow_transfers: opt bool;
@@ -287,7 +158,7 @@ type InitArgs__3 =
     symbol: opt text;
     tx_window: opt nat;
   };
-type InitArgs__2 = 
+type InitArgs__1 = 
  record {
    archiveControllers: opt opt vec principal;
    archiveCycles: nat;
@@ -299,17 +170,7 @@ type InitArgs__2 =
    settleToRecords: nat;
    supportedBlocks: vec BlockType;
  };
-type InitArgs__1 = opt InitArgs__2;
-type InitArgs = 
- opt
-  record {
-    collection_approval_requires_token: opt bool;
-    deployer: principal;
-    max_approvals: opt nat;
-    max_approvals_per_token_or_collection: opt nat;
-    max_revoke_approvals: opt nat;
-    settle_to_approvals: opt nat;
-  };
+type InitArgs = opt InitArgs__1;
 type IndexType = 
  variant {
    Managed;
@@ -346,7 +207,7 @@ type GetArchivesResult = vec GetArchivesResultItem;
 type GetArchivesArgs = record {from: opt principal;};
 type Example = 
  service {
-   burn_nft: (vec nat) -> (Result);
+   burn_nft: (nat, nat) -> (Result);
    change_library: (Account__1, opt LibraryID, LibraryID, nat) -> (Result);
    create_library: (CreateLibraryRequest) -> (Result_1);
    create_user: (Account__1, CreateUserRequest) -> (Result_2);
@@ -363,23 +224,6 @@ type Example =
    get_users_from_accounts: (vec Account__1) -> (vec UserProfile) query;
    get_users_from_ids: (vec text) -> (vec UserProfile) query;
    icrc10_supported_standards: () -> (SupportedStandards__1) query;
-   icrc37_approve_collection: (vec ApproveCollectionArg) ->
-    (vec opt ApproveCollectionResult);
-   icrc37_approve_tokens: (vec ApproveTokenArg) ->
-    (vec opt ApproveTokenResult);
-   icrc37_get_collection_approvals: (Account__1, opt CollectionApproval,
-    opt nat) -> (vec CollectionApproval) query;
-   icrc37_get_token_approvals: (vec nat, opt TokenApproval, opt nat) ->
-    (vec TokenApproval) query;
-   icrc37_is_approved: (vec IsApprovedArg) -> (vec bool) query;
-   icrc37_max_approvals_per_token_or_collection: () -> (opt nat) query;
-   icrc37_max_revoke_approvals: () -> (opt nat) query;
-   icrc37_revoke_collection_approvals: (vec RevokeCollectionApprovalArg) ->
-    (vec opt RevokeCollectionApprovalResult);
-   icrc37_revoke_token_approvals: (vec RevokeTokenApprovalArg) ->
-    (vec opt RevokeTokenApprovalResult);
-   icrc37_transfer_from: (vec TransferFromArg) ->
-    (vec opt TransferFromResult);
    icrc3_get_archives: (GetArchivesArgs) -> (GetArchivesResult) query;
    icrc3_get_blocks: (vec TransactionRange) -> (GetTransactionsResult) query;
    icrc3_get_tip_certificate: () -> (opt DataCertificate) query;
@@ -412,7 +256,7 @@ type Example =
    icrc7_total_supply: () -> (nat) query;
    icrc7_transfer: (vec TransferArgs) -> (vec opt TransferResult);
    icrc7_tx_window: () -> (opt nat) query;
-   mint_nft: (opt Account__1, NFTInput) -> (Result_1);
+   mint_nft: (Account__1, MintNFTRequest) -> (Result_1);
    update_downloads: (nat, nat32) -> (Result);
  };
 type DataCertificate = 
@@ -434,48 +278,6 @@ type CreateLibraryRequest =
    owner: Account__1;
    thumbnail: text;
  };
-type CollectionApproval = 
- record {
-   created_at_time: opt nat64;
-   expires_at: opt nat64;
-   from_subaccount: opt blob;
-   memo: opt blob;
-   spender: Account__3;
- };
-type CandyShared = 
- variant {
-   Array: vec CandyShared;
-   Blob: blob;
-   Bool: bool;
-   Bytes: vec nat8;
-   Class: vec PropertyShared;
-   Float: float64;
-   Floats: vec float64;
-   Int: int;
-   Int16: int16;
-   Int32: int32;
-   Int64: int64;
-   Int8: int8;
-   Ints: vec int;
-   Map: vec record {
-              text;
-              CandyShared;
-            };
-   Nat: nat;
-   Nat16: nat16;
-   Nat32: nat32;
-   Nat64: nat64;
-   Nat8: nat8;
-   Nats: vec nat;
-   Option: opt CandyShared;
-   Principal: principal;
-   Set: vec CandyShared;
-   Text: text;
-   ValueMap: vec record {
-                   CandyShared;
-                   CandyShared;
-                 };
- };
 type BlockType__1 = 
  record {
    block_type: text;
@@ -493,67 +295,6 @@ type ArchivedTransactionResponse =
    args: vec TransactionRange__1;
    callback: GetTransactionsFn;
  };
-type ApproveTokenResult = 
- variant {
-   Err: ApproveTokenError;
-   Ok: nat;
- };
-type ApproveTokenError = 
- variant {
-   CreatedInFuture: record {ledger_time: nat64;};
-   Duplicate: record {duplicate_of: nat;};
-   GenericBatchError: record {
-                        error_code: nat;
-                        message: text;
-                      };
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   InvalidSpender;
-   NonExistingTokenId;
-   TooOld;
-   Unauthorized;
- };
-type ApproveTokenArg = 
- record {
-   approval_info: ApprovalInfo;
-   token_id: nat;
- };
-type ApproveCollectionResult = 
- variant {
-   Err: ApproveCollectionError;
-   Ok: nat;
- };
-type ApproveCollectionError = 
- variant {
-   CreatedInFuture: record {ledger_time: nat64;};
-   Duplicate: record {duplicate_of: nat;};
-   GenericBatchError: record {
-                        error_code: nat;
-                        message: text;
-                      };
-   GenericError: record {
-                   error_code: nat;
-                   message: text;
-                 };
-   InvalidSpender;
-   TooOld;
- };
-type ApproveCollectionArg = record {approval_info: ApprovalInfo;};
-type ApprovalInfo = 
- record {
-   created_at_time: opt nat64;
-   expires_at: opt nat64;
-   from_subaccount: opt blob;
-   memo: opt blob;
-   spender: Account__3;
- };
-type Account__3 = 
- record {
-   owner: principal;
-   subaccount: opt Subaccount__1;
- };
 type Account__2 = 
  record {
    owner: principal;
@@ -570,7 +311,6 @@ type Account =
    subaccount: opt Subaccount;
  };
 service : (record {
-             icrc37_args: opt InitArgs;
-             icrc3_args: InitArgs__1;
-             icrc7_args: opt InitArgs__3;
+             icrc3_args: InitArgs;
+             icrc7_args: opt InitArgs__2;
            }) -> Example

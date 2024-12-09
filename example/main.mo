@@ -67,6 +67,7 @@ shared(_init_msg) actor class Example(_args : {
     genre: Text;
     library_id: Nat;
     duration: Nat32;
+    bpm: Nat32;
     music_key: Text;
     creator_name: Text;
     audio_provider: Text;
@@ -484,6 +485,7 @@ shared(_init_msg) actor class Example(_args : {
       { name = "genre"; value = #Text(nft_data.genre); immutable = true },
       { name = "creator_name"; value = #Text(nft_data.creator_name); immutable = true },
       { name = "downloads"; value = #Nat32(0); immutable = false },
+      { name = "bpm"; value = #Nat32(nft_data.bpm); immutable = false },
       { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
       { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
       { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false }
