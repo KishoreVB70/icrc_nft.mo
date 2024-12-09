@@ -919,7 +919,9 @@ shared(_init_msg) actor class Example(_args : {
   public shared(msg) func icrc7_transfer<system>(
     args: [TransferArgs]
   ) : async [?TransferResult] {
-      icrc7().transfer<system>(msg.caller, args);
+    // Return null to prohibit token transfer - Soul Bound Token
+    return [null];
+    // icrc7().transfer<system>(msg.caller, args);
   };
 
   /////////
