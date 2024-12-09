@@ -549,26 +549,25 @@ shared(_init_msg) actor class Example(_args : {
       created_at_time = null;
     };
 
-
-    let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([token]);
-    let metadataOpt: ?[(Text, Value)] = metadatas[0];
-    var library_id_meta: Nat = 0;
-    switch (metadataOpt) {
-      case (?metadata_array) {
-        for (entry in metadata_array) {
-          let (key, value) = entry;  // Destructure the tuple
-            if (key == "library_id") {
-                switch (value) {
-                    case (#Nat(library_id)) {
-                        library_id_meta := library_id;
-                    };
-                    case _ {}; // Ignore other value types
-                };
-            };
-        };
-      };
-      case (_) {};
-    };
+    // let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([token]);
+    // let metadataOpt: ?[(Text, Value)] = metadatas[0];
+    // var library_id_meta: Nat = 0;
+    // switch (metadataOpt) {
+    //   case (?metadata_array) {
+    //     for (entry in metadata_array) {
+    //       let (key, value) = entry;  // Destructure the tuple
+    //         if (key == "library_id") {
+    //             switch (value) {
+    //                 case (#Nat(library_id)) {
+    //                     library_id_meta := library_id;
+    //                 };
+    //                 case _ {}; // Ignore other value types
+    //             };
+    //         };
+    //     };
+    //   };
+    //   case (_) {};
+    // };
 
     // Check if the account is the owner of the tokens
     switch(icrc7().burn_nfts<system>(msg.caller, burnrequest)){
