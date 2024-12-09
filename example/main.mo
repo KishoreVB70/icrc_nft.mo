@@ -463,11 +463,12 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
+  // Create a token
   public shared(msg) func mint_nft(
     owner: Account, nft_data: MintNFTRequest
   ) : async Result.Result<Nat, Text> {
 
-    // 1) Check nft owner is the owner of the library
+    // Check nft owner is the owner of the library
     let lib_quer: ?Library = Map.get(libraries, nhash, nft_data.library_id);
     switch lib_quer {
       case(?val) {
@@ -505,8 +506,6 @@ shared(_init_msg) actor class Example(_args : {
       override = true;
     };
 
-
-    // 2) Add that into the metadata
     switch(icrc7().set_nfts<system>(msg.caller, [req], true)){
       // The returned value is just the transaction id, not required
       case(#ok(_val)) {
@@ -540,60 +539,72 @@ shared(_init_msg) actor class Example(_args : {
     };
   };
 
+  // Delete a token
   public shared(msg) func burn_nft(
-    tokens: [Nat]
+    token: Nat, library_id: Nat,
   ) : async Result.Result<Bool, Text> {
     let burnrequest = {
-      tokens = tokens;
+      tokens = [token];
       memo = null;
       created_at_time = null;
     };
 
+
+    // let metadatas: [?[(Text, Value)]] = await icrc7_token_metadata([token]);
+    // let metadataOpt: ?[(Text, Value)] = metadatas[0];
+    // var library_id_meta: Nat = 0;
+    // switch (metadataOpt) {
+    //   case (?metadata_array) {
+    //     for (entry in metadata_array) {
+    //       let (key, value) = entry;  // Destructure the tuple
+    //         if (key == "library_id") {
+    //             switch (value) {
+    //                 case (#Nat(library_id)) {
+    //                     library_id_meta := library_id;
+    //                 };
+    //                 case _ {}; // Ignore other value types
+    //             };
+    //         };
+    //     };
+    //   };
+    //   case (_) {};
+    // };
+
     // Check if the account is the owner of the tokens
-    // Removal of a token from library in case of a burn
-
-    // 1) Obtain the library id of the nft to clear it after success
-    /*
-      let metadatas = icrc7().token_metadata(tokens);
-      let metadata = metadatas[0];
-      var lib_id = 0;
-      switch(metadata) {
-        case(?val) {  
-          // This operation depends on the structure of the metadata
-          for ((k, v) in val.vals()) {
-            if (k == "library_id") {
-                lib_id := ?v;
-            }
-          };
-        };
-        case(null) { };
-      };
-    */
-
     switch(icrc7().burn_nfts<system>(msg.caller, burnrequest)){
-      case(#ok(_val)) {
-        return #ok(true);
+      // Removal of a token from library in case of a burn
+      case(#ok(burn_nft_batch_response)) {
+        switch (burn_nft_batch_response) {
+          case (#Ok(res_array)) {
+            switch (res_array[0].result) {
+              case (#Ok(nft_id)) {
+                let libOpt: ?Library = Map.get(libraries, nhash, library_id);
+                switch libOpt {
+                  case (?lib) {
+                    let arr: [Nat] = Array.filter<Nat>(lib.nft_ids, func x = x!= nft_id);
+                    let updated_lib: Library = {
+                      library_id = lib.library_id;
+                      name = lib.name;
+                      description = lib.description;
+                      owner = lib.owner;
+                      creator_name = lib.creator_name;
+                      thumbnail = lib.thumbnail;
+                      nft_ids = arr;
+                    };
+                    Map.set(libraries, nhash, library_id, updated_lib);
+                    return #ok(true);
+                  };
+                  case (null) {return #err("Invalid library")};
+                };
+              };
+              case (#Err(_)) {return #err("can't burn nft due to token error")};
+            };
+          };
+          case(#Err(_)) {return #err("can't burn nft due to batch error")};
+        };
       };
       case(#err(err)) #err(err);
     };
-    /*
-      // Iterate over the list of BurnNFTItemResponse
-      for (response in burnResponses) {
-        switch (response.result) {
-          case (#Ok(tokenId)) {
-            // Access the token_id
-            let nftId = response.token_id;
-            // Process the token_id as needed
-          };
-          case (#Err(burnError)) {
-            // Handle the burn error as needed
-          };
-        };
-      };
-      case (#Err(batchError)) {
-        // Handle the batch error as needed
-      };
-    */
   };
 
   public query func get_user_nft_metadatas(user: Account): async [?[(Text, Value)]] {
