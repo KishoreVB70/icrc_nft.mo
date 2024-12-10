@@ -196,6 +196,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const TransferResult = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : TransferError });
   const MintNFTRequest = IDL.Record({
+    'bpm' : IDL.Nat32,
     'duration' : IDL.Nat32,
     'creator_name' : IDL.Text,
     'name' : IDL.Text,

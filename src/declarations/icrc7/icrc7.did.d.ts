@@ -168,6 +168,7 @@ export interface Library {
 }
 export type LibraryID = bigint;
 export interface MintNFTRequest {
+  'bpm' : number,
   'duration' : number,
   'creator_name' : string,
   'name' : string,

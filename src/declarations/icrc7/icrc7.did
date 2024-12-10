@@ -119,6 +119,7 @@ type MintNFTRequest =
  record {
    audio_identifier: text;
    audio_provider: text;
+   bpm: nat32;
    creator_name: text;
    description: text;
    duration: nat32;

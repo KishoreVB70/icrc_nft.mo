@@ -61,11 +61,16 @@ shared(_init_msg) actor class Example(_args : {
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
+
+
+  public type LibraryID = Text;
+  type LibraryIDS = Set.Set<LibraryID>;
+
   public type MintNFTRequest = {
     name: Text;
     description: Text;
     genre: Text;
-    library_id: Nat;
+    library_id: LibraryID;
     duration: Nat32;
     bpm: Nat32;
     music_key: Text;
@@ -73,9 +78,6 @@ shared(_init_msg) actor class Example(_args : {
     audio_provider: Text;
     audio_identifier: Text;
   };
-
-  public type LibraryID = Nat;
-  type LibraryIDS = Set.Set<LibraryID>;
 
   public type Library = {
     library_id: LibraryID;
@@ -200,12 +202,12 @@ shared(_init_msg) actor class Example(_args : {
   // Create a library
   public shared(msg) func create_library(
     libreq: CreateLibraryRequest
-  ): async Result.Result<Nat, Text> {
+  ): async Result.Result<Text, Text> {
     // Only the admin can create a library
     if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
 
     // UUID
-    let uuid = await generate_uuid_nat();
+    let uuid = await generate_uuid_text();
 
     let library: Library = {
       description = libreq.description;
@@ -218,7 +220,7 @@ shared(_init_msg) actor class Example(_args : {
     };
   
     // 1) Create the library
-    Map.set(libraries, nhash, uuid , library);
+    Map.set(libraries, thash, uuid , library);
 
     // 2) Update the user libraries
     let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
@@ -226,13 +228,13 @@ shared(_init_msg) actor class Example(_args : {
     switch userlibs {
       case (?val) {
         // User already has libraries, hence add the new library to user account
-        let _result: Bool = Set.put(val, nhash, library.library_id);
+        let _result: Bool = Set.put(val, thash, library.library_id);
         let _result1 = Map.put(userslibraries, ahash, library.owner, val);
       };
       case (null) {
         // First library of the user, hence add to the mapping
         let newSet = Set.new<LibraryID>();
-        let _result: Bool = Set.put(newSet, nhash, library.library_id);
+        let _result: Bool = Set.put(newSet, thash, library.library_id);
         let _result1 = Map.put(userslibraries, ahash, library.owner, newSet);
       };
     };
@@ -249,7 +251,7 @@ shared(_init_msg) actor class Example(_args : {
   private func get_libraries_private(library_ids: [LibraryID]): [Library] {
     let libs = Vec.new<Library>();
     for (lib_id in library_ids.vals()) {
-      let lib: ?Library = Map.get(libraries, nhash, lib_id);
+      let lib: ?Library = Map.get(libraries, thash, lib_id);
       switch lib {
         case (?val) {
           Vec.add(libs, val);
@@ -282,7 +284,7 @@ shared(_init_msg) actor class Example(_args : {
     };
 
     // 3) Account must be the owner of the library to
-    let lib_quer: ?Library = Map.get(libraries, nhash, library_id_to);
+    let lib_quer: ?Library = Map.get(libraries, thash, library_id_to);
     switch lib_quer {
       case(?val) {
         if (val.owner != owner) {
@@ -300,7 +302,7 @@ shared(_init_msg) actor class Example(_args : {
     // 1) Remove NFT from library 1 if present in the input
     switch library_id_from {
       case (?lib_id_from) {
-        let lib_from: ?Library = Map.get(libraries, nhash, lib_id_from);
+        let lib_from: ?Library = Map.get(libraries, thash, lib_id_from);
         switch lib_from {
           case (?val) {
             // Remove item
@@ -319,7 +321,7 @@ shared(_init_msg) actor class Example(_args : {
               nft_ids = arr;
             };
 
-            Map.set(libraries, nhash, lib_id_from, updated_lib);
+            Map.set(libraries, thash, lib_id_from, updated_lib);
           };
           case (null) {};
         };
@@ -345,7 +347,7 @@ shared(_init_msg) actor class Example(_args : {
 
 
     // 2) Add the NFT to library to
-    let lib_to: ?Library = Map.get(libraries, nhash, library_id_to);
+    let lib_to: ?Library = Map.get(libraries, thash, library_id_to);
     switch lib_to {
       case (?val) {
         // Add item
@@ -364,7 +366,7 @@ shared(_init_msg) actor class Example(_args : {
           thumbnail = val.thumbnail;
         };
 
-        Map.set(libraries, nhash, library_id_to, updated_lib);
+        Map.set(libraries, thash, library_id_to, updated_lib);
       };
       case (null) {
       };
@@ -380,7 +382,7 @@ shared(_init_msg) actor class Example(_args : {
         updates = [
           {
             name = "library_id";
-            mode = #Set(#Nat(library_id_to));
+            mode = #Set(#Text(library_id_to));
           }
         ];
       }
@@ -461,7 +463,7 @@ shared(_init_msg) actor class Example(_args : {
   ) : async Result.Result<Nat, Text> {
 
     // Check nft owner is the owner of the library
-    let lib_quer: ?Library = Map.get(libraries, nhash, nft_data.library_id);
+    let lib_quer: ?Library = Map.get(libraries, thash, nft_data.library_id);
     switch lib_quer {
       case(?val) {
         if (val.owner != owner) {
@@ -478,7 +480,7 @@ shared(_init_msg) actor class Example(_args : {
 
     // Generate metadata
     let metadata : NFTInput = #Class([
-      { name = "library_id"; value = #Nat(nft_data.library_id); immutable = false },
+      { name = "library_id"; value = #Text(nft_data.library_id); immutable = false },
       { name = "name"; value = #Text(nft_data.name); immutable = true },
       { name = "description"; value = #Text(nft_data.description); immutable = true },
       { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
@@ -523,7 +525,7 @@ shared(_init_msg) actor class Example(_args : {
               thumbnail = val.thumbnail;
             };
 
-            Map.set(libraries, nhash, nft_data.library_id, updated_lib);
+            Map.set(libraries, thash, nft_data.library_id, updated_lib);
           };
           case _ {};
         };
@@ -535,7 +537,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // Delete a token
   public shared(msg) func burn_nft(
-    token: Nat, library_id: Nat,
+    token: Nat, library_id: LibraryID,
   ) : async Result.Result<Bool, Text> {
     let burnrequest = {
       tokens = [token];
@@ -571,7 +573,7 @@ shared(_init_msg) actor class Example(_args : {
           case (#Ok(res_array)) {
             switch (res_array[0].result) {
               case (#Ok(nft_id)) {
-                let libOpt: ?Library = Map.get(libraries, nhash, library_id);
+                let libOpt: ?Library = Map.get(libraries, thash, library_id);
                 switch libOpt {
                   case (?lib) {
                     let arr: [Nat] = Array.filter<Nat>(lib.nft_ids, func x = x!= nft_id);
@@ -584,7 +586,7 @@ shared(_init_msg) actor class Example(_args : {
                       thumbnail = lib.thumbnail;
                       nft_ids = arr;
                     };
-                    Map.set(libraries, nhash, library_id, updated_lib);
+                    Map.set(libraries, thash, library_id, updated_lib);
                     return #ok(true);
                   };
                   case (null) {return #err("Invalid library")};
