@@ -210,7 +210,7 @@ export const idlFactory = ({ IDL }) => {
   const Example = IDL.Service({
     'burn_nft' : IDL.Func([IDL.Nat, LibraryID], [Result], []),
     'change_library' : IDL.Func(
-        [Account__1, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
+        [Account__1, LibraryID, LibraryID, IDL.Nat],
         [Result],
         [],
       ),

@@ -209,7 +209,7 @@ type GetArchivesArgs = record {from: opt principal;};
 type Example = 
  service {
    burn_nft: (nat, LibraryID) -> (Result);
-   change_library: (Account__1, opt LibraryID, LibraryID, nat) -> (Result);
+   change_library: (Account__1, LibraryID, LibraryID, nat) -> (Result);
    create_library: (CreateLibraryRequest) -> (Result_2);
    create_user: (Account__1, CreateUserRequest) -> (Result_2);
    get_libraries: (vec LibraryID) -> (vec Library) query;

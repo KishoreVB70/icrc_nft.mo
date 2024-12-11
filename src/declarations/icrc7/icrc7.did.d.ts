@@ -41,7 +41,7 @@ export interface DataCertificate {
 export interface Example {
   'burn_nft' : ActorMethod<[bigint, LibraryID], Result>,
   'change_library' : ActorMethod<
-    [Account__1, [] | [LibraryID], LibraryID, bigint],
+    [Account__1, LibraryID, LibraryID, bigint],
     Result
   >,
   'create_library' : ActorMethod<[CreateLibraryRequest], Result_2>,
