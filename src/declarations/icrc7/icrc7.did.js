@@ -48,12 +48,12 @@ export const idlFactory = ({ IDL }) => {
       'symbol' : IDL.Opt(IDL.Text),
     })
   );
+  const LibraryID = IDL.Text;
   const Result = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
   const Account__1 = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
-  const LibraryID = IDL.Nat;
   const CreateLibraryRequest = IDL.Record({
     'creator_name' : IDL.Text,
     'thumbnail' : IDL.Text,
@@ -61,13 +61,12 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'description' : IDL.Text,
   });
-  const Result_1 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
+  const Result_2 = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
   const CreateUserRequest = IDL.Record({
     'name' : IDL.Text,
     'email' : IDL.Text,
     'image' : IDL.Text,
   });
-  const Result_2 = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
   const Library = IDL.Record({
     'creator_name' : IDL.Text,
     'thumbnail' : IDL.Text,
@@ -203,18 +202,19 @@ export const idlFactory = ({ IDL }) => {
     'audio_identifier' : IDL.Text,
     'description' : IDL.Text,
     'genre' : IDL.Text,
-    'library_id' : IDL.Nat,
+    'library_id' : LibraryID,
     'music_key' : IDL.Text,
     'audio_provider' : IDL.Text,
   });
+  const Result_1 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const Example = IDL.Service({
-    'burn_nft' : IDL.Func([IDL.Nat, IDL.Nat], [Result], []),
+    'burn_nft' : IDL.Func([IDL.Nat, LibraryID], [Result], []),
     'change_library' : IDL.Func(
         [Account__1, IDL.Opt(LibraryID), LibraryID, IDL.Nat],
         [Result],
         [],
       ),
-    'create_library' : IDL.Func([CreateLibraryRequest], [Result_1], []),
+    'create_library' : IDL.Func([CreateLibraryRequest], [Result_2], []),
     'create_user' : IDL.Func([Account__1, CreateUserRequest], [Result_2], []),
     'get_libraries' : IDL.Func(
         [IDL.Vec(LibraryID)],

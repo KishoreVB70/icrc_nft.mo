@@ -13,7 +13,6 @@ import Result "mo:base/Result";
 // External data structures
 import Map "mo:map/Map";
 import Set "mo:map/Set";
-import { nhash } "mo:map/Map";
 import { thash } "mo:map/Map";
 import Vec "mo:vector";
 
@@ -264,7 +263,7 @@ shared(_init_msg) actor class Example(_args : {
 
   // Change library or assign a  library
   public shared(msg) func change_library(
-    owner: Account, library_id_from: ?LibraryID,
+    owner: Account, library_id_from: LibraryID,
     library_id_to: LibraryID, nft_id: Nat
   ): async Result.Result<Bool,Text> {
     // Checks
@@ -299,50 +298,26 @@ shared(_init_msg) actor class Example(_args : {
 
     // Changes
 
-    // 1) Remove NFT from library 1 if present in the input
-    switch library_id_from {
-      case (?lib_id_from) {
-        let lib_from: ?Library = Map.get(libraries, thash, lib_id_from);
-        switch lib_from {
-          case (?val) {
-            // Remove item
-            // Warn: O(N) operation
-            // Couldn't implement a hash set due to stable memory limitation;
+    // 1) Remove NFT from library 1
+    let lib_from: ?Library = Map.get(libraries, thash, library_id_from);
+    switch lib_from {
+      case (?val) {
+        // Remove item
+        let arr: [Nat] = Array.filter<Nat>(val.nft_ids, func x = x!= nft_id);
 
-            let arr: [Nat] = Array.filter<Nat>(val.nft_ids, func x = x!= nft_id);
-
-            let updated_lib: Library = {
-              library_id = val.library_id;
-              name = val.name;
-              description = val.description;
-              owner = val.owner;
-              creator_name = val.creator_name;
-              thumbnail = val.thumbnail;
-              nft_ids = arr;
-            };
-
-            Map.set(libraries, thash, lib_id_from, updated_lib);
-          };
-          case (null) {};
+        let updated_lib: Library = {
+          library_id = val.library_id;
+          name = val.name;
+          description = val.description;
+          owner = val.owner;
+          creator_name = val.creator_name;
+          thumbnail = val.thumbnail;
+          nft_ids = arr;
         };
+
+        Map.set(libraries, thash, library_id_from, updated_lib);
       };
-      // If there is no from library, then the nft must not have a field called library_id
-      case (null) {
-        let metadatas = icrc7().token_metadata([nft_id]);
-        let metadata = metadatas[0];
-        let hasLibraryId: Bool = switch (metadata) {
-          case null { false };
-          case (?map) {
-            switch (Array.find(map, func((key, _): (Text, Value)): Bool {
-              key == "library_id"
-            })) {
-              case null { false };
-              case (?_) { true };
-            }
-          };
-        };
-        if (hasLibraryId) return #err("library id exists")
-      };
+      case (null) {};
     };
 
 

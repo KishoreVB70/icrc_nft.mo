@@ -39,12 +39,12 @@ export interface DataCertificate {
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'burn_nft' : ActorMethod<[bigint, bigint], Result>,
+  'burn_nft' : ActorMethod<[bigint, LibraryID], Result>,
   'change_library' : ActorMethod<
     [Account__1, [] | [LibraryID], LibraryID, bigint],
     Result
   >,
-  'create_library' : ActorMethod<[CreateLibraryRequest], Result_1>,
+  'create_library' : ActorMethod<[CreateLibraryRequest], Result_2>,
   'create_user' : ActorMethod<[Account__1, CreateUserRequest], Result_2>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
   'get_tip' : ActorMethod<[], Tip>,
@@ -166,7 +166,7 @@ export interface Library {
   'nft_ids' : Array<bigint>,
   'library_id' : LibraryID,
 }
-export type LibraryID = bigint;
+export type LibraryID = string;
 export interface MintNFTRequest {
   'bpm' : number,
   'duration' : number,
@@ -175,7 +175,7 @@ export interface MintNFTRequest {
   'audio_identifier' : string,
   'description' : string,
   'genre' : string,
-  'library_id' : bigint,
+  'library_id' : LibraryID,
   'music_key' : string,
   'audio_provider' : string,
 }
