@@ -22,6 +22,31 @@ export type BalanceOfRequest = Array<Account__2>;
 export type BalanceOfResponse = Array<bigint>;
 export interface BlockType { 'url' : string, 'block_type' : string }
 export interface BlockType__1 { 'url' : string, 'block_type' : string }
+export type CandyShared = { 'Int' : bigint } |
+  { 'Map' : Array<[string, CandyShared]> } |
+  { 'Nat' : bigint } |
+  { 'Set' : Array<CandyShared> } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Uint8Array | number[] } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Ints' : Array<bigint> } |
+  { 'Nat8' : number } |
+  { 'Nats' : Array<bigint> } |
+  { 'Text' : string } |
+  { 'Bytes' : Uint8Array | number[] } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Option' : [] | [CandyShared] } |
+  { 'Floats' : Array<number> } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  { 'Array' : Array<CandyShared> } |
+  { 'ValueMap' : Array<[CandyShared, CandyShared]> } |
+  { 'Class' : Array<PropertyShared> };
 export interface CreateLibraryRequest {
   'creator_name' : string,
   'thumbnail' : string,
@@ -39,11 +64,8 @@ export interface DataCertificate {
   'hash_tree' : Uint8Array | number[],
 }
 export interface Example {
-  'burn_nft' : ActorMethod<[bigint, LibraryID], Result>,
-  'change_library' : ActorMethod<
-    [Account__1, LibraryID, LibraryID, bigint],
-    Result
-  >,
+  'burn_nft' : ActorMethod<[bigint], Result>,
+  'change_library' : ActorMethod<[Account__1, LibraryID, bigint], Result>,
   'create_library' : ActorMethod<[CreateLibraryRequest], Result_2>,
   'create_user' : ActorMethod<[Account__1, CreateUserRequest], Result_2>,
   'get_libraries' : ActorMethod<[Array<LibraryID>], Array<Library>>,
@@ -171,6 +193,7 @@ export interface MintNFTRequest {
   'bpm' : number,
   'duration' : number,
   'creator_name' : string,
+  'audio_provider_spec' : Array<[NFTInput, NFTInput]>,
   'name' : string,
   'audio_identifier' : string,
   'description' : string,
@@ -179,8 +202,38 @@ export interface MintNFTRequest {
   'music_key' : string,
   'audio_provider' : string,
 }
+export type NFTInput = { 'Int' : bigint } |
+  { 'Map' : Array<[string, CandyShared]> } |
+  { 'Nat' : bigint } |
+  { 'Set' : Array<CandyShared> } |
+  { 'Nat16' : number } |
+  { 'Nat32' : number } |
+  { 'Nat64' : bigint } |
+  { 'Blob' : Uint8Array | number[] } |
+  { 'Bool' : boolean } |
+  { 'Int8' : number } |
+  { 'Ints' : Array<bigint> } |
+  { 'Nat8' : number } |
+  { 'Nats' : Array<bigint> } |
+  { 'Text' : string } |
+  { 'Bytes' : Uint8Array | number[] } |
+  { 'Int16' : number } |
+  { 'Int32' : number } |
+  { 'Int64' : bigint } |
+  { 'Option' : [] | [CandyShared] } |
+  { 'Floats' : Array<number> } |
+  { 'Float' : number } |
+  { 'Principal' : Principal } |
+  { 'Array' : Array<CandyShared> } |
+  { 'ValueMap' : Array<[CandyShared, CandyShared]> } |
+  { 'Class' : Array<PropertyShared> };
 export type OwnerOfRequest = Array<bigint>;
 export type OwnerOfResponse = Array<[] | [Account__2]>;
+export interface PropertyShared {
+  'value' : CandyShared,
+  'name' : string,
+  'immutable' : boolean,
+}
 export type Result = { 'ok' : boolean } |
   { 'err' : string };
 export type Result_1 = { 'ok' : bigint } |

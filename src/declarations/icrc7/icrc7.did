@@ -113,12 +113,56 @@ type Result =
    err: text;
    ok: bool;
  };
+type PropertyShared = 
+ record {
+   immutable: bool;
+   name: text;
+   value: CandyShared;
+ };
 type OwnerOfResponse = vec opt Account__2;
 type OwnerOfRequest = vec nat;
+type NFTInput = 
+ variant {
+   Array: vec CandyShared;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec PropertyShared;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Ints: vec int;
+   Map: vec record {
+              text;
+              CandyShared;
+            };
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt CandyShared;
+   Principal: principal;
+   Set: vec CandyShared;
+   Text: text;
+   ValueMap: vec record {
+                   CandyShared;
+                   CandyShared;
+                 };
+ };
 type MintNFTRequest = 
  record {
    audio_identifier: text;
    audio_provider: text;
+   audio_provider_spec: vec record {
+                              NFTInput;
+                              NFTInput;
+                            };
    bpm: nat32;
    creator_name: text;
    description: text;
@@ -208,8 +252,8 @@ type GetArchivesResult = vec GetArchivesResultItem;
 type GetArchivesArgs = record {from: opt principal;};
 type Example = 
  service {
-   burn_nft: (nat, LibraryID) -> (Result);
-   change_library: (Account__1, LibraryID, LibraryID, nat) -> (Result);
+   burn_nft: (nat) -> (Result);
+   change_library: (Account__1, LibraryID, nat) -> (Result);
    create_library: (CreateLibraryRequest) -> (Result_2);
    create_user: (Account__1, CreateUserRequest) -> (Result_2);
    get_libraries: (vec LibraryID) -> (vec Library) query;
@@ -278,6 +322,40 @@ type CreateLibraryRequest =
    name: text;
    owner: Account__1;
    thumbnail: text;
+ };
+type CandyShared = 
+ variant {
+   Array: vec CandyShared;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec PropertyShared;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Ints: vec int;
+   Map: vec record {
+              text;
+              CandyShared;
+            };
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt CandyShared;
+   Principal: principal;
+   Set: vec CandyShared;
+   Text: text;
+   ValueMap: vec record {
+                   CandyShared;
+                   CandyShared;
+                 };
  };
 type BlockType__1 = 
  record {

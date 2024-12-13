@@ -428,17 +428,16 @@ shared(_init_msg) actor class Example(_args : {
       case (#err(_msg)) return #err("Invalid Tokenid");
     };
 
-    // Obtain current number of downloads
     let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([nft_id]);
     let metadataOpt: ?[(Text, Value)] = metadatas[0];
-    var current_downloads:Nat32 = 0;
+    var current_downloads:Nat = 0;
     switch (metadataOpt) {
       case (?metadata_array) {
         for (entry in Array.vals(metadata_array)) {
           let (key, value) = entry;  // Destructure the tuple
             if (key == "downloads") {
               switch (value) {
-                case (#Nat32(downloads_val)) {
+                case (#Nat(downloads_val)) {
                     current_downloads := downloads_val;
                 };
                 case (_) {}; 
@@ -449,7 +448,8 @@ shared(_init_msg) actor class Example(_args : {
       case (_) {};
     };
 
-    let updated_downloads: Nat32 = current_downloads + downloads;
+    let nat32_current_downloads: Nat32 = Nat32.fromNat(current_downloads);
+    let updated_downloads: Nat32 = nat32_current_downloads + downloads;
 
     let update_request: ICRC7.UpdateNFTRequest = 
     [

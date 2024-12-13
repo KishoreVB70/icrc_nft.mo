@@ -1,5 +1,6 @@
 export const idlFactory = ({ IDL }) => {
   const ArchivedTransactionResponse = IDL.Rec();
+  const CandyShared = IDL.Rec();
   const Value__1 = IDL.Rec();
   const Value__2 = IDL.Rec();
   const IndexType = IDL.Variant({
@@ -48,12 +49,12 @@ export const idlFactory = ({ IDL }) => {
       'symbol' : IDL.Opt(IDL.Text),
     })
   );
-  const LibraryID = IDL.Text;
   const Result = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
   const Account__1 = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(Subaccount),
   });
+  const LibraryID = IDL.Text;
   const CreateLibraryRequest = IDL.Record({
     'creator_name' : IDL.Text,
     'thumbnail' : IDL.Text,
@@ -194,10 +195,72 @@ export const idlFactory = ({ IDL }) => {
     'TooOld' : IDL.Null,
   });
   const TransferResult = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : TransferError });
+  const PropertyShared = IDL.Record({
+    'value' : CandyShared,
+    'name' : IDL.Text,
+    'immutable' : IDL.Bool,
+  });
+  CandyShared.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Map' : IDL.Vec(IDL.Tuple(IDL.Text, CandyShared)),
+      'Nat' : IDL.Nat,
+      'Set' : IDL.Vec(CandyShared),
+      'Nat16' : IDL.Nat16,
+      'Nat32' : IDL.Nat32,
+      'Nat64' : IDL.Nat64,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Bool' : IDL.Bool,
+      'Int8' : IDL.Int8,
+      'Ints' : IDL.Vec(IDL.Int),
+      'Nat8' : IDL.Nat8,
+      'Nats' : IDL.Vec(IDL.Nat),
+      'Text' : IDL.Text,
+      'Bytes' : IDL.Vec(IDL.Nat8),
+      'Int16' : IDL.Int16,
+      'Int32' : IDL.Int32,
+      'Int64' : IDL.Int64,
+      'Option' : IDL.Opt(CandyShared),
+      'Floats' : IDL.Vec(IDL.Float64),
+      'Float' : IDL.Float64,
+      'Principal' : IDL.Principal,
+      'Array' : IDL.Vec(CandyShared),
+      'ValueMap' : IDL.Vec(IDL.Tuple(CandyShared, CandyShared)),
+      'Class' : IDL.Vec(PropertyShared),
+    })
+  );
+  const NFTInput = IDL.Variant({
+    'Int' : IDL.Int,
+    'Map' : IDL.Vec(IDL.Tuple(IDL.Text, CandyShared)),
+    'Nat' : IDL.Nat,
+    'Set' : IDL.Vec(CandyShared),
+    'Nat16' : IDL.Nat16,
+    'Nat32' : IDL.Nat32,
+    'Nat64' : IDL.Nat64,
+    'Blob' : IDL.Vec(IDL.Nat8),
+    'Bool' : IDL.Bool,
+    'Int8' : IDL.Int8,
+    'Ints' : IDL.Vec(IDL.Int),
+    'Nat8' : IDL.Nat8,
+    'Nats' : IDL.Vec(IDL.Nat),
+    'Text' : IDL.Text,
+    'Bytes' : IDL.Vec(IDL.Nat8),
+    'Int16' : IDL.Int16,
+    'Int32' : IDL.Int32,
+    'Int64' : IDL.Int64,
+    'Option' : IDL.Opt(CandyShared),
+    'Floats' : IDL.Vec(IDL.Float64),
+    'Float' : IDL.Float64,
+    'Principal' : IDL.Principal,
+    'Array' : IDL.Vec(CandyShared),
+    'ValueMap' : IDL.Vec(IDL.Tuple(CandyShared, CandyShared)),
+    'Class' : IDL.Vec(PropertyShared),
+  });
   const MintNFTRequest = IDL.Record({
     'bpm' : IDL.Nat32,
     'duration' : IDL.Nat32,
     'creator_name' : IDL.Text,
+    'audio_provider_spec' : IDL.Vec(IDL.Tuple(NFTInput, NFTInput)),
     'name' : IDL.Text,
     'audio_identifier' : IDL.Text,
     'description' : IDL.Text,
@@ -208,12 +271,8 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_1 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const Example = IDL.Service({
-    'burn_nft' : IDL.Func([IDL.Nat, LibraryID], [Result], []),
-    'change_library' : IDL.Func(
-        [Account__1, LibraryID, LibraryID, IDL.Nat],
-        [Result],
-        [],
-      ),
+    'burn_nft' : IDL.Func([IDL.Nat], [Result], []),
+    'change_library' : IDL.Func([Account__1, LibraryID, IDL.Nat], [Result], []),
     'create_library' : IDL.Func([CreateLibraryRequest], [Result_2], []),
     'create_user' : IDL.Func([Account__1, CreateUserRequest], [Result_2], []),
     'get_libraries' : IDL.Func(
