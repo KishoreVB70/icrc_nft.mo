@@ -65,6 +65,11 @@ shared(_init_msg) actor class Example(_args : {
   public type LibraryID = Text;
   type LibraryIDS = Set.Set<LibraryID>;
 
+  public type AudioProvider = {
+    name: Text;
+    fields: [(NFTInput, NFTInput)];
+  };
+
   public type MintNFTRequest = {
     name: Text;
     description: Text;
@@ -74,9 +79,11 @@ shared(_init_msg) actor class Example(_args : {
     bpm: Nat32;
     music_key: Text;
     creator_name: Text;
-    audio_provider: Text;
+    audio_provider: [(NFTInput, NFTInput)];
     audio_identifier: Text;
   };
+
+
 
   public type Library = {
     library_id: LibraryID;
@@ -465,7 +472,7 @@ shared(_init_msg) actor class Example(_args : {
       { name = "bpm"; value = #Nat32(nft_data.bpm); immutable = false },
       { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
       { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
-      { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false }
+      { name = "audio_provider"; value = #ValueMap(nft_data.audio_provider); immutable = false }
     ]);
 
     let req: SetNFTItemRequest = {
@@ -511,8 +518,9 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Delete a token
+  // Only the owner of the token can call the function
   public shared(msg) func burn_nft(
-    token: Nat, library_id: LibraryID,
+    token: Nat
   ) : async Result.Result<Bool, Text> {
     let burnrequest = {
       tokens = [token];
@@ -520,25 +528,29 @@ shared(_init_msg) actor class Example(_args : {
       created_at_time = null;
     };
 
-    // let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([token]);
-    // let metadataOpt: ?[(Text, Value)] = metadatas[0];
-    // var library_id_meta: Nat = 0;
-    // switch (metadataOpt) {
-    //   case (?metadata_array) {
-    //     for (entry in metadata_array) {
-    //       let (key, value) = entry;  // Destructure the tuple
-    //         if (key == "library_id") {
-    //             switch (value) {
-    //                 case (#Nat(library_id)) {
-    //                     library_id_meta := library_id;
-    //                 };
-    //                 case _ {}; // Ignore other value types
-    //             };
-    //         };
-    //     };
-    //   };
-    //   case (_) {};
-    // };
+    // Obtain the library id of the token
+    let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([token]);
+    let metadataOpt: ?[(Text, Value)] = metadatas[0];
+    var library_id:Text = "";
+    switch (metadataOpt) {
+      case (?metadata_array) {
+        for (entry in Array.vals(metadata_array)) {
+          let (key, value) = entry;  // Destructure the tuple
+            if (key == "library_id") {
+              switch (value) {
+                case (#Text(lib_id)) {
+                    library_id := lib_id;
+                };
+                case (_) {}; // Ignore other value types
+              };
+            };
+        };
+      };
+      case (_) {};
+    };
+
+    if (Text.size(library_id) == 0) {return #err("Invalid library")};
+
 
     // Check if the account is the owner of the tokens
     switch(icrc7().burn_nfts<system>(msg.caller, burnrequest)){
