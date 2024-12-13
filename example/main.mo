@@ -83,8 +83,6 @@ shared(_init_msg) actor class Example(_args : {
     audio_identifier: Text;
   };
 
-
-
   public type Library = {
     library_id: LibraryID;
     name: Text;
@@ -122,7 +120,6 @@ shared(_init_msg) actor class Example(_args : {
   stable var userids = Map.new<Account, Text>();
   stable var userprofiles = Map.new<Text, UserProfile>();
 
-// User related functions
   // Get users from IDs
   public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
     return get_users(user_ids);
@@ -156,6 +153,7 @@ shared(_init_msg) actor class Example(_args : {
     }
   };
 
+  // Helper function for query functions
   private func get_users(user_ids: [Text]): [UserProfile] {
     let users = Vec.new<UserProfile>();
     for (user_id in user_ids.vals()) {
@@ -171,12 +169,13 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Create user
+  // Access control: Contract owner
   public shared(msg) func create_user(
     account: Account,
     user_req: CreateUserRequest
   ): async Result.Result<Text, Text> {
     // Only the admin can create a user
-    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
+    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
     let acc: ?Text = Map.get(userids, ahash, account);
     switch (acc) {
       case (?_val) {
@@ -202,10 +201,8 @@ shared(_init_msg) actor class Example(_args : {
     return #ok(uuid);
   };
 
-
-// Library related functions
-
   // Create a library
+  // Access control: Contract owner
   public shared(msg) func create_library(
     libreq: CreateLibraryRequest
   ): async Result.Result<Text, Text> {
@@ -248,12 +245,12 @@ shared(_init_msg) actor class Example(_args : {
     return #ok(library.library_id);
   };
 
-
-  // Get multiple Libraries
+  // Get Libraries
   public query func get_libraries(library_ids: [LibraryID]): async [Library] {
     return get_libraries_private(library_ids);
   };
 
+  // Helper function for query functions
   private func get_libraries_private(library_ids: [LibraryID]): [Library] {
     let libs = Vec.new<Library>();
     for (lib_id in library_ids.vals()) {
@@ -271,8 +268,7 @@ shared(_init_msg) actor class Example(_args : {
   // Change library
   // Access control: Token owner
   public shared(msg) func change_library(
-    token_owner: Account, library_id_from: LibraryID,
-    library_id_to: LibraryID, nft_id: Nat
+    token_owner: Account, target_library_id: LibraryID, nft_id: Nat
   ): async Result.Result<Bool,Text> {
     // Checks
 
@@ -290,25 +286,44 @@ shared(_init_msg) actor class Example(_args : {
       case _ return #err("Invalid Tokenid");
     };
 
-
-    // 2) Account must be the owner of the library to
-    let lib_quer: ?Library = Map.get(libraries, thash, library_id_to);
+    // 2) Account must be the owner of the target library
+    let lib_quer: ?Library = Map.get(libraries, thash, target_library_id);
     switch lib_quer {
       case(?val) {
         if (val.owner != token_owner) {
-          return #err("Unauthorized library to");
+          return #err("Unauthorized target library");
         };
       };
       case(null) {
-        return #err("Invalid library to");
+        return #err("Invalid target library");
       };
     };
 
+    // Obtain the current library id
+    let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([nft_id]);
+    let metadataOpt: ?[(Text, Value)] = metadatas[0];
+    var current_library_id:Text = "";
+    switch (metadataOpt) {
+      case (?metadata_array) {
+        for (entry in Array.vals(metadata_array)) {
+          let (key, value) = entry;  // Destructure the tuple
+            if (key == "library_id") {
+              switch (value) {
+                case (#Text(lib_id)) {
+                    current_library_id := lib_id;
+                };
+                case (_) {}; // Ignore other value types
+              };
+            };
+        };
+      };
+      case (_) {};
+    };
 
     // Changes
 
-    // 1) Remove NFT from library 1
-    let lib_from: ?Library = Map.get(libraries, thash, library_id_from);
+    // 1) Remove NFT from current library
+    let lib_from: ?Library = Map.get(libraries, thash, current_library_id);
     switch lib_from {
       case (?val) {
         // Remove item
@@ -324,14 +339,13 @@ shared(_init_msg) actor class Example(_args : {
           nft_ids = arr;
         };
 
-        Map.set(libraries, thash, library_id_from, updated_lib);
+        Map.set(libraries, thash, current_library_id, updated_lib);
       };
       case (null) {};
     };
 
-
     // 2) Add the NFT to library to
-    let lib_to: ?Library = Map.get(libraries, thash, library_id_to);
+    let lib_to: ?Library = Map.get(libraries, thash, target_library_id);
     switch lib_to {
       case (?val) {
         // Add item
@@ -350,7 +364,7 @@ shared(_init_msg) actor class Example(_args : {
           thumbnail = val.thumbnail;
         };
 
-        Map.set(libraries, thash, library_id_to, updated_lib);
+        Map.set(libraries, thash, target_library_id, updated_lib);
       };
       case (null) {
       };
@@ -366,7 +380,7 @@ shared(_init_msg) actor class Example(_args : {
         updates = [
           {
             name = "library_id";
-            mode = #Set(#Text(library_id_to));
+            mode = #Set(#Text(target_library_id));
           }
         ];
       }
