@@ -268,32 +268,34 @@ shared(_init_msg) actor class Example(_args : {
     return Vec.toArray(libs);
   };
 
-  // Change library or assign a  library
+  // Change library
+  // Access control: Token owner
   public shared(msg) func change_library(
-    owner: Account, library_id_from: LibraryID,
+    token_owner: Account, library_id_from: LibraryID,
     library_id_to: LibraryID, nft_id: Nat
   ): async Result.Result<Bool,Text> {
     // Checks
 
-    // 1) Caller must be the admin of the NFT collection
-    if (icrc7().get_state().owner != msg.caller) return #err("Unauthorized caller");
-
-    // 2) Account must be the owner of the NFT
+    // 1) Caller must be the owner of the token
     switch( icrc7().get_token_owner_canonical(nft_id) ){
-      case(#ok(val)) {
-        let acc = val;
-        if (owner != acc) {
+      case(#ok(acc)) {
+        let principal = acc.owner;
+        if (token_owner != acc) {
           return #err("Unauthorized token owner");
-        }
+        };
+        if (principal != msg.caller) {
+          return #err("Unauthorized caller");
+        };
       };
       case _ return #err("Invalid Tokenid");
     };
 
-    // 3) Account must be the owner of the library to
+
+    // 2) Account must be the owner of the library to
     let lib_quer: ?Library = Map.get(libraries, thash, library_id_to);
     switch lib_quer {
       case(?val) {
-        if (val.owner != owner) {
+        if (val.owner != token_owner) {
           return #err("Unauthorized library to");
         };
       };
@@ -382,6 +384,7 @@ shared(_init_msg) actor class Example(_args : {
     return get_user_library_ids_private(user);
   };
 
+  // Helper function for query functions
   private func get_user_library_ids_private(user: Account): [LibraryID] {
     let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
     switch(result) {
