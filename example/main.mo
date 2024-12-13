@@ -41,34 +41,28 @@ shared(_init_msg) actor class Example(_args : {
   icrc3_args: ICRC3.InitArgs;
 }) = this {
 
-  type Account =                          ICRC7.Account;
-  type Environment =                      ICRC7.Environment;
-  type Value =                            ICRC7.Value;
-  type NFT =                              ICRC7.NFT;
-  type NFTShared =                        ICRC7.NFTShared;
-  type NFTMap =                           ICRC7.NFTMap;
+  // ICRC7 data types
+  type Account = ICRC7.Account;
+  type Environment = ICRC7.Environment;
+  type Value = ICRC7.Value;
+  type NFT = ICRC7.NFT;
+  type NFTShared = ICRC7.NFTShared;
+  type NFTMap = ICRC7.NFTMap;
   type SetNFTRequest = ICRC7.SetNFTRequest;
   type SetNFTItemRequest = ICRC7.SetNFTItemRequest;
   type NFTInput = ICRC7.NFTInput;
-  type OwnerOfResponse =                    ICRC7.Service.OwnerOfResponse;
-  type OwnerOfRequest =                    ICRC7.Service.OwnerOfRequest;
-  type TransferArgs =                     ICRC7.Service.TransferArg;
-  type TransferResult =                   ICRC7.Service.TransferResult;
-  type TransferError =                    ICRC7.Service.TransferError;
-  type BalanceOfRequest =                 ICRC7.Service.BalanceOfRequest;
-  type BalanceOfResponse =                ICRC7.Service.BalanceOfResponse;
+  type OwnerOfResponse = ICRC7.Service.OwnerOfResponse;
+  type OwnerOfRequest = ICRC7.Service.OwnerOfRequest;
+  type TransferArgs = ICRC7.Service.TransferArg;
+  type TransferResult =ICRC7.Service.TransferResult;
+  type TransferError = ICRC7.Service.TransferError;
+  type BalanceOfRequest = ICRC7.Service.BalanceOfRequest;
+  type BalanceOfResponse = ICRC7.Service.BalanceOfResponse;
 
   stable var init_msg = _init_msg; //preserves original initialization;
 
-
-
   public type LibraryID = Text;
   type LibraryIDS = Set.Set<LibraryID>;
-
-  public type AudioProvider = {
-    name: Text;
-    fields: [(NFTInput, NFTInput)];
-  };
 
   public type MintNFTRequest = {
     name: Text;
@@ -79,7 +73,8 @@ shared(_init_msg) actor class Example(_args : {
     bpm: Nat32;
     music_key: Text;
     creator_name: Text;
-    audio_provider: [(NFTInput, NFTInput)];
+    audio_provider: Text;
+    audio_provider_spec: [(NFTInput, NFTInput)];
     audio_identifier: Text;
   };
 
@@ -119,6 +114,39 @@ shared(_init_msg) actor class Example(_args : {
   stable var libraries = Map.new<LibraryID, Library>();
   stable var userids = Map.new<Account, Text>();
   stable var userprofiles = Map.new<Text, UserProfile>();
+
+  // Create user
+  // Access control: Contract owner
+  public shared(msg) func create_user(
+    account: Account,
+    user_req: CreateUserRequest
+  ): async Result.Result<Text, Text> {
+    // Only the admin can create a user
+    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
+    let acc: ?Text = Map.get(userids, ahash, account);
+    switch (acc) {
+      case (?_val) {
+        return #err("User already exists");
+      };
+      case null{};
+    };
+
+    let uuid: Text = await generate_uuid_text();
+
+    let user: UserProfile = {
+      name= user_req.name;
+      email= user_req.email;
+      image= user_req.image;
+      account= account;
+    };
+
+    // Map Account to uuid
+    Map.set(userids, ahash, account, uuid);
+
+    // Map uuid to profile
+    Map.set(userprofiles, thash, uuid, user);
+    return #ok(uuid);
+  };
 
   // Get users from IDs
   public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
@@ -166,39 +194,6 @@ shared(_init_msg) actor class Example(_args : {
       };
     };
     return Vec.toArray(users);
-  };
-
-  // Create user
-  // Access control: Contract owner
-  public shared(msg) func create_user(
-    account: Account,
-    user_req: CreateUserRequest
-  ): async Result.Result<Text, Text> {
-    // Only the admin can create a user
-    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
-    let acc: ?Text = Map.get(userids, ahash, account);
-    switch (acc) {
-      case (?_val) {
-        return #err("User already exists");
-      };
-      case null{};
-    };
-
-    let uuid: Text = await generate_uuid_text();
-
-    let user: UserProfile = {
-      name= user_req.name;
-      email= user_req.email;
-      image= user_req.image;
-      account= account;
-    };
-
-    // Map Account to uuid
-    Map.set(userids, ahash, account, uuid);
-
-    // Map uuid to profile
-    Map.set(userprofiles, thash, uuid, user);
-    return #ok(uuid);
   };
 
   // Create a library
@@ -502,17 +497,18 @@ shared(_init_msg) actor class Example(_args : {
 
     // Generate metadata
     let metadata : NFTInput = #Class([
-      { name = "library_id"; value = #Text(nft_data.library_id); immutable = false },
       { name = "name"; value = #Text(nft_data.name); immutable = true },
       { name = "description"; value = #Text(nft_data.description); immutable = true },
       { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
       { name = "genre"; value = #Text(nft_data.genre); immutable = true },
       { name = "creator_name"; value = #Text(nft_data.creator_name); immutable = true },
       { name = "downloads"; value = #Nat32(0); immutable = false },
-      { name = "bpm"; value = #Nat32(nft_data.bpm); immutable = false },
+      { name = "bpm"; value = #Nat32(nft_data.bpm); immutable = true },
       { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
+      { name = "library_id"; value = #Text(nft_data.library_id); immutable = false },
       { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
-      { name = "audio_provider"; value = #ValueMap(nft_data.audio_provider); immutable = false }
+      { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false },
+      { name = "audio_provider_spec"; value = #ValueMap(nft_data.audio_provider_spec); immutable = false }
     ]);
 
     let req: SetNFTItemRequest = {
