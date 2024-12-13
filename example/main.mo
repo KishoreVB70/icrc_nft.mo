@@ -403,7 +403,7 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Update the downloads of an NFT
-  // Only admin can access
+  // Access control: Contract owner
   // Set to take a variable to allow batch updates in the future
   public shared(msg) func update_downloads(
     nft_id: Nat, downloads: Nat32
@@ -416,6 +416,28 @@ shared(_init_msg) actor class Example(_args : {
       case (#err(_msg)) return #err("Invalid Tokenid");
     };
 
+    // Obtain current number of downloads
+    let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([nft_id]);
+    let metadataOpt: ?[(Text, Value)] = metadatas[0];
+    var current_downloads:Nat32 = 0;
+    switch (metadataOpt) {
+      case (?metadata_array) {
+        for (entry in Array.vals(metadata_array)) {
+          let (key, value) = entry;  // Destructure the tuple
+            if (key == "downloads") {
+              switch (value) {
+                case (#Nat32(downloads_val)) {
+                    current_downloads := downloads_val;
+                };
+                case (_) {}; 
+              };
+            };
+        };
+      };
+      case (_) {};
+    };
+
+    let updated_downloads: Nat32 = current_downloads + downloads;
 
     let update_request: ICRC7.UpdateNFTRequest = 
     [
@@ -426,7 +448,7 @@ shared(_init_msg) actor class Example(_args : {
         updates = [
           {
             name = "downloads";
-            mode = #Set(#Nat32(downloads));
+            mode = #Set(#Nat32(updated_downloads));
           }
         ];
       }
