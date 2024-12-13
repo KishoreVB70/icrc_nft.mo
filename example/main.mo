@@ -440,20 +440,21 @@ shared(_init_msg) actor class Example(_args : {
   };
 
   // Create a token
+  // Access control: Contract owner
   public shared(msg) func mint_nft(
-    owner: Account, nft_data: MintNFTRequest
+    token_owner: Account, nft_data: MintNFTRequest
   ) : async Result.Result<Nat, Text> {
 
     // Check nft owner is the owner of the library
     let lib_quer: ?Library = Map.get(libraries, thash, nft_data.library_id);
     switch lib_quer {
       case(?val) {
-        if (val.owner != owner) {
+        if (val.owner != token_owner) {
           return #err("Unauthorized library");
         };
       };
       case(null) {
-        return #err("Invalid library id");
+        return #err("Invalid library");
       };
     };
 
@@ -477,7 +478,7 @@ shared(_init_msg) actor class Example(_args : {
 
     let req: SetNFTItemRequest = {
       token_id= uuid;
-      owner= ?owner;
+      owner= ?token_owner;
       metadata = metadata;
       created_at_time = null;
       memo = null;
@@ -490,10 +491,6 @@ shared(_init_msg) actor class Example(_args : {
         // Add NFT to the library
         switch (lib_quer) {
           case (?val) {
-            // Add item
-            // Warn: O(n) operation, could not implement better data structure due to stable
-            // structure limitation
-            // let new_list = List.push(nft_id, val.nft_ids);
             let buffer = Buffer.fromArray<Nat>(val.nft_ids);
             buffer.add(uuid);
 
@@ -513,12 +510,14 @@ shared(_init_msg) actor class Example(_args : {
         };
         return #ok(uuid);
       };
-      case(#err(err)) #err(err)
+      case(#err(err)) {
+        return #err(err);
+      };
     };
   };
 
   // Delete a token
-  // Only the owner of the token can call the function
+  // Access control: Token owner
   public shared(msg) func burn_nft(
     token: Nat
   ) : async Result.Result<Bool, Text> {
