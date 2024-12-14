@@ -13,7 +13,6 @@ module {
     public type LibraryIDS = Set.Set<LibraryID>;
     public type NFTInput = ICRC7.NFTInput;
 
-
     public type MintNFTRequest = {
         name: Text;
         description: Text;
