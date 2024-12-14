@@ -29,6 +29,25 @@ shared(init_msg) actor class SoodioAdmin() = this {
         return #ok(Principal.toText(principal));
     };
 
+    public shared(msg) func upgradeSoodio() : async Result.Result<Bool, Text> {
+        if(msg.caller != owner) return #err("Unauthorized admin");
+                switch (soodioPrincipal) {
+            case (?principal) {
+                try {
+                    let _existingActor : Soodio.Soodio = actor(Principal.toText(principal));
+                    // let upgradedActor = await (system Soodio.Soodio)(#upgrade(existingActor))();
+                    #ok(true);
+                } catch (_error) {
+                    #err("Failed to upgrade canister")
+                }
+            };
+            case (null) {
+                #err("Soodio canister not created yet")
+            };
+        };
+
+    };
+
     public shared(msg) func add_authorized_principals(
         principals: [Principal]
     ): async Result.Result<Bool, Text> {

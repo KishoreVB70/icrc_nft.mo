@@ -1,7 +1,7 @@
 {
     "canisters": {
-        "icrc7": {
-            "main": "example/Soodio.mo",
+        "soodio": {
+            "main": "src/contracts/SoodioAdmin.mo",
             "type": "motoko",
             "gzip": true
         },
