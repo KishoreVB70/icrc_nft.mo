@@ -7,71 +7,22 @@ import Text "mo:base/Text";
 import Nat32 "mo:base/Nat32";
 import Result "mo:base/Result";
 
-// External data structures
-import Set "mo:map/Set";
-
 // Certified data for ICRC-3
 import Bool "mo:base/Bool";
 
-// Standards
-import ICRC7 "mo:icrc7-mo";
+import Types "Types";
 
+// Standards
 import Soodio "Soodio";
 import Cycles "mo:base/ExperimentalCycles";
 
-shared(init_msg) actor class SoodioAdmin() = this {
-    type Account = ICRC7.Account;
+shared(init_msg) actor class SoodioAdmin() = this {    
+    type CreateLibraryRequest = Types.CreateLibraryRequest;
+    type CreateUserRequest = Types.CreateUserRequest;
+    type MintNFTRequest = Types.MintNFTRequest;
+    type Account = Types.Account;
 
-    public type LibraryID = Text;
-    type LibraryIDS = Set.Set<LibraryID>;
-    type NFTInput = ICRC7.NFTInput;
 
-
-    public type MintNFTRequest = {
-    name: Text;
-    description: Text;
-    genre: Text;
-    library_id: LibraryID;
-    duration: Nat32;
-    bpm: Nat32;
-    music_key: Text;
-    creator_name: Text;
-    audio_provider: Text;
-    audio_provider_spec: [(NFTInput, NFTInput)];
-    audio_identifier: Text;
-    };
-
-    public type Library = {
-    library_id: LibraryID;
-    name: Text;
-    description: Text;
-    thumbnail: Text;
-    owner: Account;
-    creator_name: Text;
-    nft_ids: [Nat];
-    };
-
-    public type CreateLibraryRequest = {
-    name: Text;
-    description: Text;
-    thumbnail: Text;
-    creator_name: Text;
-    owner: Account;
-    };
-
-    public type CreateUserRequest = {
-    name: Text;
-    email: Text;
-    image: Text;
-    };
-
-    public type UserProfile = {
-    name: Text;
-    email: Text;
-    image: Text;
-    account: Account;
-    };
-    
     stable var owner: Principal = init_msg.caller;
 
     stable var authorizedPrincipals: [Principal] = [owner];

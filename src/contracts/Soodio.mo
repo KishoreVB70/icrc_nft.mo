@@ -9,6 +9,7 @@ import Nat8 "mo:base/Nat8";
 import Text "mo:base/Text";
 import Nat32 "mo:base/Nat32";
 import Result "mo:base/Result";
+import Bool "mo:base/Bool";
 
 // External data structures
 import Map "mo:map/Map";
@@ -18,7 +19,6 @@ import Vec "mo:vector";
 
 // Certified data for ICRC-3
 import CertifiedData "mo:base/CertifiedData";
-import Bool "mo:base/Bool";
 import CertTree "mo:cert/CertTree";
 
 // Standards
@@ -34,9 +34,10 @@ import ICRC3Default "./initial_state/icrc3";
 import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
 
+import Types "Types";
+
   // _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Soodio() = this {
-  public type Account = ICRC7.Account;
   type Environment = ICRC7.Environment;
   type Value = ICRC7.Value;
   type NFT = ICRC7.NFT;
@@ -53,53 +54,14 @@ shared(_init_msg) actor class Soodio() = this {
   type BalanceOfRequest = ICRC7.Service.BalanceOfRequest;
   type BalanceOfResponse = ICRC7.Service.BalanceOfResponse;
   
-  public type LibraryID = Text;
-  type LibraryIDS = Set.Set<LibraryID>;
-
-  public type MintNFTRequest = {
-    name: Text;
-    description: Text;
-    genre: Text;
-    library_id: LibraryID;
-    duration: Nat32;
-    bpm: Nat32;
-    music_key: Text;
-    creator_name: Text;
-    audio_provider: Text;
-    audio_provider_spec: [(NFTInput, NFTInput)];
-    audio_identifier: Text;
-  };
-
-  public type Library = {
-    library_id: LibraryID;
-    name: Text;
-    description: Text;
-    thumbnail: Text;
-    owner: Account;
-    creator_name: Text;
-    nft_ids: [Nat];
-  };
-
-  public type CreateLibraryRequest = {
-    name: Text;
-    description: Text;
-    thumbnail: Text;
-    creator_name: Text;
-    owner: Account;
-  };
-
-  public type CreateUserRequest = {
-    name: Text;
-    email: Text;
-    image: Text;
-  };
-
-  public type UserProfile = {
-    name: Text;
-    email: Text;
-    image: Text;
-    account: Account;
-  };
+  public type Account = Types.Account;
+  public type LibraryID = Types.LibraryID;
+  public type LibraryIDS = Types.LibraryIDS;
+  public type MintNFTRequest = Types.MintNFTRequest;
+  public type Library = Types.Library;
+  public type CreateLibraryRequest = Types.CreateLibraryRequest;
+  public type CreateUserRequest = Types.CreateUserRequest;
+  public type UserProfile = Types.UserProfile;
 
   stable var init_msg = _init_msg; //preserves original initialization;
   // Stable variables
