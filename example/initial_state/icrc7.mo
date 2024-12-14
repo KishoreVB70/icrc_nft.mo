@@ -8,7 +8,7 @@ module{
         description = ?"A Collection of Audio Libraries";
         logo = ?"https://picsum.photos/200/300";
         supply_cap = null;
-        allow_transfers = null;
+        allow_transfers = ?false;
         max_query_batch_size = ?100;
         max_update_batch_size = ?100;
         default_take_value = ?1000;

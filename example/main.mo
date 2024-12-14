@@ -36,7 +36,7 @@ import UUID "mo:uuid/UUID";
 
 
 // _init_msg is used to get the principal of the deployer
-shared(_init_msg) actor class Example(_args : {
+shared(_init_msg) actor class Soodio(_args : {
   icrc7_args: ?ICRC7.InitArgs;
   icrc3_args: ICRC3.InitArgs;
 }) = this {
@@ -938,7 +938,6 @@ shared(_init_msg) actor class Example(_args : {
   ) : async [?TransferResult] {
     // Return null to prohibit token transfer - Soul Bound Token
     return [null];
-    // icrc7().transfer<system>(msg.caller, args);
   };
 
   /////////
