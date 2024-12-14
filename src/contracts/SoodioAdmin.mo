@@ -1,16 +1,76 @@
-import Principal "mo:base/Principal";
-import Result "mo:base/Result";
-import Bool "mo:base/Bool";
-import Array "mo:base/Array";
+// Base library imports
 import Buffer "mo:base/Buffer";
+import Array "mo:base/Array";
+import Principal "mo:base/Principal";
+import Nat "mo:base/Nat";
+import Text "mo:base/Text";
+import Nat32 "mo:base/Nat32";
+import Result "mo:base/Result";
+
+// External data structures
+import Set "mo:map/Set";
+
+// Certified data for ICRC-3
+import Bool "mo:base/Bool";
+
+// Standards
+import ICRC7 "mo:icrc7-mo";
+
 import Soodio "Soodio";
 import Cycles "mo:base/ExperimentalCycles";
 
 shared(init_msg) actor class SoodioAdmin() = this {
-    type CreateUserRequest = Soodio.CreateUserRequest;
-    type CreateLibraryRequest = Soodio.CreateLibraryRequest;
-    type MintNFTRequest = Soodio.MintNFTRequest;
-    type Account = Soodio.Account;
+    type Account = ICRC7.Account;
+
+    public type LibraryID = Text;
+    type LibraryIDS = Set.Set<LibraryID>;
+    type NFTInput = ICRC7.NFTInput;
+
+
+    public type MintNFTRequest = {
+    name: Text;
+    description: Text;
+    genre: Text;
+    library_id: LibraryID;
+    duration: Nat32;
+    bpm: Nat32;
+    music_key: Text;
+    creator_name: Text;
+    audio_provider: Text;
+    audio_provider_spec: [(NFTInput, NFTInput)];
+    audio_identifier: Text;
+    };
+
+    public type Library = {
+    library_id: LibraryID;
+    name: Text;
+    description: Text;
+    thumbnail: Text;
+    owner: Account;
+    creator_name: Text;
+    nft_ids: [Nat];
+    };
+
+    public type CreateLibraryRequest = {
+    name: Text;
+    description: Text;
+    thumbnail: Text;
+    creator_name: Text;
+    owner: Account;
+    };
+
+    public type CreateUserRequest = {
+    name: Text;
+    email: Text;
+    image: Text;
+    };
+
+    public type UserProfile = {
+    name: Text;
+    email: Text;
+    image: Text;
+    account: Account;
+    };
     
     stable var owner: Principal = init_msg.caller;
 
@@ -31,7 +91,7 @@ shared(init_msg) actor class SoodioAdmin() = this {
 
     public shared(msg) func upgradeSoodio() : async Result.Result<Bool, Text> {
         if(msg.caller != owner) return #err("Unauthorized admin");
-                switch (soodioPrincipal) {
+        switch (soodioPrincipal) {
             case (?principal) {
                 try {
                     let _existingActor : Soodio.Soodio = actor(Principal.toText(principal));
@@ -45,7 +105,6 @@ shared(init_msg) actor class SoodioAdmin() = this {
                 #err("Soodio canister not created yet")
             };
         };
-
     };
 
     public shared(msg) func add_authorized_principals(
