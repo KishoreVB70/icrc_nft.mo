@@ -1,7 +1,7 @@
 {
     "canisters": {
         "icrc7": {
-            "main": "example/main.mo",
+            "main": "example/Soodio.mo",
             "type": "motoko",
             "gzip": true
         },

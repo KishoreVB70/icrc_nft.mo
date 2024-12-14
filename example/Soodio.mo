@@ -53,8 +53,7 @@ module {
   type TransferError = ICRC7.Service.TransferError;
   type BalanceOfRequest = ICRC7.Service.BalanceOfRequest;
   type BalanceOfResponse = ICRC7.Service.BalanceOfResponse;
-
-
+  
   public type LibraryID = Text;
   type LibraryIDS = Set.Set<LibraryID>;
 
@@ -103,12 +102,8 @@ module {
     account: Account;
   };
 
-
   // _init_msg is used to get the principal of the deployer
-  public shared(_init_msg) actor class Soodio(_args : {
-    icrc7_args: ?ICRC7.InitArgs;
-    icrc3_args: ICRC3.InitArgs;
-  }) = this {
+  public shared(_init_msg) actor class Soodio() = this {
     stable var init_msg = _init_msg; //preserves original initialization;
     // Stable variables
     stable var userslibraries = Map.new<Account, LibraryIDS>();
@@ -651,10 +646,7 @@ module {
     stable var icrc7_migration_state = ICRC7.init(
       ICRC7.initialState() , 
       #v0_1_0(#id), 
-      switch(_args.icrc7_args){
-        case(null) ICRC7Default.defaultConfig(init_msg.caller);
-        case(?val) val;
-      }, 
+      ICRC7Default.defaultConfig(init_msg.caller),
       init_msg.caller
     );
 
@@ -663,11 +655,7 @@ module {
     stable var icrc3_migration_state = ICRC3.init(
       ICRC3.initialState() ,
       #v0_1_0(#id), 
-      switch(_args.icrc3_args){
-        case(null) ICRC3Default.defaultConfig(init_msg.caller);
-        case(?val) ?val : ICRC3.InitArgs;
-      },
-    
+      ICRC3Default.defaultConfig(init_msg.caller),
       init_msg.caller
     );
 
@@ -705,7 +693,6 @@ module {
       return true;
     };
 
-    D.print("Initargs: " # debug_show(_args));
 
     func ensure_block_types(icrc3Class: ICRC3.ICRC3) : () {
       D.print("in ensure_block_types: ");
@@ -971,5 +958,3 @@ module {
   };
 
 };
-
-

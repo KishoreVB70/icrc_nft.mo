@@ -1,6 +1,7 @@
 import ICRC7 "mo:icrc7-mo";
 
 module{
+  public type InitArgs7 = ICRC7.InitArgs;
   public let defaultConfig = func(caller: Principal) : ICRC7.InitArgs{
       ?{
         symbol = ?"Sdo";

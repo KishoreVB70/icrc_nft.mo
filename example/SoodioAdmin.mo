@@ -5,8 +5,6 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Soodio "Soodio";
 import Cycles "mo:base/ExperimentalCycles";
-import ICRC7 "mo:icrc7-mo";
-import ICRC3 "mo:icrc3-mo";
 
 shared(init_msg) actor class SoodioAdmin() = this {
     type CreateUserRequest = Soodio.CreateUserRequest;
@@ -15,48 +13,20 @@ shared(init_msg) actor class SoodioAdmin() = this {
     type Account = Soodio.Account;
     
     stable var owner: Principal = init_msg.caller;
-    stable var soodioContract: Text = "";
 
     stable var authorizedPrincipals: [Principal] = [owner];
+
+    stable var soodioPrincipal: ?Principal = null;
 
     public shared(msg)func createSoodio() : async Result.Result<Text, Text> {
         if(msg.caller != owner) return #err("Unauthorized admin");
         let canisterCreationCost = 100_000_000_000;
         let initialBalance = 100_000_000_000;
         Cycles.add<system>(canisterCreationCost + initialBalance);
-        let icrc3_args : ICRC3.InitArgs = ?{
-            maxActiveRecords = 4000;
-            settleToRecords = 2000;
-            maxRecordsInArchiveInstance = 5_000_000;
-            maxArchivePages  = 62500; //allows up to 993 bytes per record
-            archiveIndexType = #Stable;
-            maxRecordsToArchive = 10_000;
-            archiveCycles = 2_000_000_000_000; //two trillion
-            archiveControllers = null;
-            supportedBlocks = [];
-        };
-
-        let icrc7_args = ?{
-            symbol = ?"Sdo";
-            name = ?"Soodio";
-            description = ?"A Collection of Audio Libraries";
-            logo = ?"https://picsum.photos/200/300";
-            supply_cap = null;
-            allow_transfers = ?false;
-            max_query_batch_size = ?100;
-            max_update_batch_size = ?100;
-            default_take_value = ?1000;
-            max_take_value = ?10000;
-            max_memo_size = ?512;
-            permitted_drift = null;
-            tx_window = null;
-            burn_account = null; //burned nfts are deleted
-            deployer = Principal;
-            supported_standards = null;
-        };
-
-        let soodioCon: Soodio.Soodio = await Soodio.Soodio(icrc3_args, icrc7_args);
-        return #ok("hi");
+        let soodioContract: Soodio.Soodio = await Soodio.Soodio();
+        let principal: Principal = Principal.fromActor(soodioContract);
+        soodioPrincipal := ?principal;
+        return #ok(Principal.toText(principal));
     };
 
     public shared(msg) func add_authorized_principals(
@@ -94,7 +64,16 @@ shared(init_msg) actor class SoodioAdmin() = this {
         if (is_authorized(msg.caller) != true) {
             return #err("Unauthorized admin");
         };
-        return await Soodio.create_library(libreq);
+
+        switch (soodioPrincipal) {
+            case (?principal) {
+                let soodioActor : Soodio.Soodio = actor(Principal.toText(principal));
+                return await soodioActor.create_library(libreq);
+            };
+            case (null) {
+                #err("Soodio canister not created yet")
+            };
+        };
     };
 
     public shared(msg) func create_user(
@@ -104,7 +83,15 @@ shared(init_msg) actor class SoodioAdmin() = this {
         if (is_authorized(msg.caller) != true) {
             return #err("Unauthorized admin");
         };
-        return await Soodio.create_user(account, user_req);
+        switch (soodioPrincipal) {
+            case (?principal) {
+                let soodioActor : Soodio.Soodio = actor(Principal.toText(principal));
+                return await soodioActor.create_user(account, user_req);
+            };
+            case (null) {
+                #err("Soodio canister not created yet")
+            };
+        };
     };
 
     public shared(msg) func mint_nft(
@@ -113,7 +100,15 @@ shared(init_msg) actor class SoodioAdmin() = this {
         if (is_authorized(msg.caller) != true) {
             return #err("Unauthorized admin");
         };
-        return await Soodio.mint_nft(token_owner, nft_data);
+        switch (soodioPrincipal) {
+            case (?principal) {
+                let soodioActor : Soodio.Soodio = actor(Principal.toText(principal));
+                return await soodioActor.mint_nft(token_owner, nft_data);
+            };
+            case (null) {
+                #err("Soodio canister not created yet")
+            };
+        };
     };
 
     public shared(msg) func update_downloads(
@@ -122,6 +117,15 @@ shared(init_msg) actor class SoodioAdmin() = this {
         if (is_authorized(msg.caller) != true) {
             return #err("Unauthorized admin");
         };
-        return await Soodio.update_downloads(nft_id, downloads);
+        switch (soodioPrincipal) {
+            case (?principal) {
+                let soodioActor : Soodio.Soodio = actor(Principal.toText(principal));
+                return await soodioActor.update_downloads(nft_id, downloads);
+            };
+            case (null) {
+                #err("Soodio canister not created yet")
+            };
+        };
     };
+
 };
