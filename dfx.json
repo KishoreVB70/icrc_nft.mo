@@ -1,6 +1,6 @@
 {
     "canisters": {
-        "hacky": {
+        "soodio": {
             "main": "src/contracts/Hacky.mo",
             "type": "motoko",
             "gzip": true
@@ -26,6 +26,6 @@
             "subnet_type": "system"
         }
     },
-    "dfx": "0.19.0",
+    "dfx": "0.22.0",
     "version": 1
 }
