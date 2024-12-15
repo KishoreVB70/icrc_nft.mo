@@ -64,7 +64,7 @@ shared(_init_msg) actor class Soodio() = this {
   public type UserProfile = Types.UserProfile;
 
   stable var init_msg = _init_msg; //preserves original initialization;
-  stable var owner: Principal = init_msg.caller;
+  stable var owner: Principal = _init_msg.caller;
   stable var authorizedPrincipals: [Principal] = [owner];
 
 
@@ -660,8 +660,8 @@ shared(_init_msg) actor class Soodio() = this {
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
     #v0_1_0(#id), 
-    ICRC7Default.defaultConfig(Principal.fromText("bd3sg-teaaa-aaaaa-qaaba-cai")),
-    Principal.fromText("bd3sg-teaaa-aaaaa-qaaba-cai")
+    ICRC7Default.defaultConfig(init_msg.caller),
+    init_msg.caller
   );
 
   let #v0_1_0(#data(icrc7_state_current)) = icrc7_migration_state;
