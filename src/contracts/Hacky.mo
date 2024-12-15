@@ -120,7 +120,7 @@ shared(_init_msg) actor class Soodio() = this {
   ): async Result.Result<Text, Text> {
     // Only the admin can create a user
     if (is_authorized(msg.caller) != true) {
-        return #err("Unauthorized admin");
+        return #err("Unauthorized");
     };
     let acc: ?Text = Map.get(userids, ahash, account);
     switch (acc) {
@@ -154,7 +154,7 @@ shared(_init_msg) actor class Soodio() = this {
   ): async Result.Result<Text, Text> {
     // Only the admin can create a library
     if (is_authorized(msg.caller) != true) {
-        return #err("Unauthorized admin");
+        return #err("Unauthorized");
     };
 
     // UUID
@@ -200,7 +200,7 @@ shared(_init_msg) actor class Soodio() = this {
     nft_id: Nat, downloads: Nat32
   ): async Result.Result<Bool, Text> {
     if (is_authorized(msg.caller) != true) {
-        return #err("Unauthorized admin");
+        return #err("Unauthorized");
     };
 
     // Token must exist
@@ -261,7 +261,7 @@ shared(_init_msg) actor class Soodio() = this {
   ) : async Result.Result<Nat, Text> {
 
     if (is_authorized(msg.caller) != true) {
-        return #err("Unauthorized admin");
+        return #err("Unauthorized");
     };
 
     // Check nft owner is the owner of the library
@@ -471,6 +471,18 @@ shared(_init_msg) actor class Soodio() = this {
   public shared(msg) func burn_nft(
     token: Nat
   ) : async Result.Result<Bool, Text> {
+
+    // Owner check
+    switch( icrc7().get_token_owner_canonical(token) ){
+      case(#ok(acc)) {
+        let principal = acc.owner;
+        if (principal != msg.caller) {
+          return #err("Unauthorized caller");
+        };
+      };
+      case _ return #err("Invalid Tokenid");
+    };
+
     let burnrequest = {
       tokens = [token];
       memo = null;
