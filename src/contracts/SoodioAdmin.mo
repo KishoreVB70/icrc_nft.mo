@@ -27,15 +27,15 @@ shared(init_msg) actor class SoodioAdmin() = this {
 
     stable var soodioPrincipal: ?Principal = null;
 
-    public shared(msg) func createSoodio() : async Result.Result<Text, Text> {
-        if(msg.caller != owner) return #err("Unauthorized admin");
+    public shared(msg) func createSoodio() : async Text {
+        if(msg.caller != owner) return "Unauthorized";
         let canisterCreationCost = 100_000_000_000;
         let initialBalance = 100_000_000_000;
         Cycles.add<system>(canisterCreationCost + initialBalance);
         let soodioContract: Soodio.Soodio = await Soodio.Soodio();
         let principal: Principal = Principal.fromActor(soodioContract);
         soodioPrincipal := ?principal;
-        return #ok(Principal.toText(principal));
+        return Principal.toText(principal);
     };
 
     public shared(msg) func addController(): async Result.Result<Bool, Text> {

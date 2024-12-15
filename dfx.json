@@ -1,6 +1,6 @@
 {
     "canisters": {
-        "soodio": {
+        "soodioadmin": {
             "main": "src/contracts/SoodioAdmin.mo",
             "type": "motoko",
             "gzip": true
