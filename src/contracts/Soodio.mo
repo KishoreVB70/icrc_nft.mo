@@ -628,7 +628,6 @@ shared(_init_msg) actor class Soodio() = this {
     return icrc7_state_current;
   };
 
-  // Unused - Why?
   private func get_icrc3_state() : ICRC3.CurrentState {
     return icrc3_state_current;
   };
