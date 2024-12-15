@@ -62,15 +62,20 @@ shared(_init_msg) actor class Soodio() = this {
   public type CreateLibraryRequest = Types.CreateLibraryRequest;
   public type CreateUserRequest = Types.CreateUserRequest;
   public type UserProfile = Types.UserProfile;
+  public type BoolResult = Result.Result<Bool, Text>;
+  public type StringResult = Result.Result<Text, Text>;
+  public type NatResult = Result.Result<Nat, Text>;
+  public type PrincipalsResult  = Result.Result<[Principal], Text>;
 
   stable var init_msg = _init_msg; //preserves original initialization;
   stable var owner: Principal = _init_msg.caller;
   stable var authorizedPrincipals: [Principal] = [owner];
+  
 
 
   public shared(msg) func add_authorized_principals(
     principals: [Principal]
-  ): async Result.Result<Bool, Text> {
+  ): async BoolResult {
     if(msg.caller != owner) return #err("Unauthorized");
     let new_principals = Buffer.fromArray<Principal>(principals);
     let existing_principals = Buffer.fromArray<Principal>(authorizedPrincipals);
@@ -81,7 +86,7 @@ shared(_init_msg) actor class Soodio() = this {
 
   public shared(msg) func revoke_authorization (
     principal: Principal
-  ): async Result.Result<Bool, Text> {
+  ): async BoolResult {
     if(msg.caller != owner) return #err("Unauthorized");
     let updated_arr: [Principal] = Array.filter<Principal>(
         authorizedPrincipals, func x = x!= principal
@@ -90,7 +95,7 @@ shared(_init_msg) actor class Soodio() = this {
     return #ok(true);
   };
 
-  public shared(msg) func get_auth(): async Result.Result<[Principal], Text>{
+  public shared(msg) func get_auth(): async PrincipalsResult{
     if(msg.caller != owner) return #err("Unauthorized");
     return #ok(authorizedPrincipals);
   };
@@ -117,7 +122,7 @@ shared(_init_msg) actor class Soodio() = this {
   public shared(msg) func create_user(
     account: Account,
     user_req: CreateUserRequest
-  ): async Result.Result<Text, Text> {
+  ): async StringResult {
     // Only the admin can create a user
     if (is_authorized(msg.caller) != true) {
         return #err("Unauthorized");
@@ -151,7 +156,7 @@ shared(_init_msg) actor class Soodio() = this {
   // Access control: Contract owner
   public shared(msg) func create_library(
     libreq: CreateLibraryRequest
-  ): async Result.Result<Text, Text> {
+  ): async StringResult {
     // Only the admin can create a library
     if (is_authorized(msg.caller) != true) {
         return #err("Unauthorized");
@@ -198,7 +203,7 @@ shared(_init_msg) actor class Soodio() = this {
   // Set to take a variable to allow batch updates in the future
   public shared(msg) func update_downloads(
     nft_id: Nat, downloads: Nat32
-  ): async Result.Result<Bool, Text> {
+  ): async BoolResult {
     if (is_authorized(msg.caller) != true) {
         return #err("Unauthorized");
     };
@@ -258,7 +263,7 @@ shared(_init_msg) actor class Soodio() = this {
   // Access control: Contract owner
   public shared(msg) func mint_nft(
     token_owner: Account, nft_data: MintNFTRequest
-  ) : async Result.Result<Nat, Text> {
+  ) : async NatResult {
 
     if (is_authorized(msg.caller) != true) {
         return #err("Unauthorized");
@@ -342,7 +347,7 @@ shared(_init_msg) actor class Soodio() = this {
   // Access control: Token owner
   public shared(msg) func change_library(
     token_owner: Account, target_library_id: LibraryID, nft_id: Nat
-  ): async Result.Result<Bool,Text> {
+  ): async BoolResult {
     // Checks
 
     // 1) Caller must be the owner of the token
@@ -470,7 +475,7 @@ shared(_init_msg) actor class Soodio() = this {
   // Access control: Token owner
   public shared(msg) func burn_nft(
     token: Nat
-  ) : async Result.Result<Bool, Text> {
+  ) : async BoolResult {
 
     // Owner check
     switch( icrc7().get_token_owner_canonical(token) ){
@@ -575,7 +580,7 @@ shared(_init_msg) actor class Soodio() = this {
     return get_users(user_ids);
   };
 
-  public query  func get_user_id(account: Account): async Result.Result<Text, Text> {
+  public query  func get_user_id(account: Account): async StringResult {
     let user_id: ?Text = Map.get(userids, ahash, account);
     switch (user_id) {
       case (?val) {
