@@ -90,6 +90,11 @@ shared(_init_msg) actor class Soodio() = this {
     return #ok(true);
   };
 
+  public shared(msg) func get_auth(): async Result.Result<[Principal], Text>{
+    if(msg.caller != owner) return #err("Unauthorized");
+    return #ok(authorizedPrincipals);
+  };
+
   private func is_authorized(caller: Principal): Bool {
     for (principal in authorizedPrincipals.vals()) {
         if (principal == caller) {
