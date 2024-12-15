@@ -605,8 +605,8 @@ shared(_init_msg) actor class Soodio() = this {
   stable var icrc7_migration_state = ICRC7.init(
     ICRC7.initialState() , 
     #v0_1_0(#id), 
-    ICRC7Default.defaultConfig(init_msg.caller),
-    init_msg.caller
+    ICRC7Default.defaultConfig(Principal.fromText("bd3sg-teaaa-aaaaa-qaaba-cai")),
+    Principal.fromText("bd3sg-teaaa-aaaaa-qaaba-cai")
   );
 
   let #v0_1_0(#data(icrc7_state_current)) = icrc7_migration_state;
@@ -628,7 +628,6 @@ shared(_init_msg) actor class Soodio() = this {
     return icrc7_state_current;
   };
 
-  // Unused - Why?
   private func get_icrc3_state() : ICRC3.CurrentState {
     return icrc3_state_current;
   };
@@ -914,4 +913,8 @@ shared(_init_msg) actor class Soodio() = this {
   public query func get_tip() : async ICRC3.Tip {
     return icrc3().get_tip();
   };
+
+  public query func get_owner(): async Principal {
+    return icrc7().get_state().owner;
+  }
 };
