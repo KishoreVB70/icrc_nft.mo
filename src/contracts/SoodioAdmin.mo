@@ -6,15 +6,13 @@ import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Nat32 "mo:base/Nat32";
 import Result "mo:base/Result";
-
-// Certified data for ICRC-3
 import Bool "mo:base/Bool";
-
-import Types "Types";
 
 // Standards
 import Soodio "Soodio";
+import Types "Types";
 import Cycles "mo:base/ExperimentalCycles";
+import Interface "IcInterface";
 
 shared(init_msg) actor class SoodioAdmin() = this {    
     type CreateLibraryRequest = Types.CreateLibraryRequest;
@@ -29,7 +27,7 @@ shared(init_msg) actor class SoodioAdmin() = this {
 
     stable var soodioPrincipal: ?Principal = null;
 
-    public shared(msg)func createSoodio() : async Result.Result<Text, Text> {
+    public shared(msg) func createSoodio() : async Result.Result<Text, Text> {
         if(msg.caller != owner) return #err("Unauthorized admin");
         let canisterCreationCost = 100_000_000_000;
         let initialBalance = 100_000_000_000;
@@ -40,17 +38,32 @@ shared(init_msg) actor class SoodioAdmin() = this {
         return #ok(Principal.toText(principal));
     };
 
-    public shared(msg) func upgradeSoodio() : async Result.Result<Bool, Text> {
+    public shared(msg) func addController(): async Result.Result<Bool, Text> {
         if(msg.caller != owner) return #err("Unauthorized admin");
         switch (soodioPrincipal) {
             case (?principal) {
-                try {
-                    let _existingActor : Soodio.Soodio = actor(Principal.toText(principal));
-                    // let upgradedActor = await (system Soodio.Soodio)(#upgrade(existingActor))();
-                    #ok(true);
-                } catch (_error) {
-                    #err("Failed to upgrade canister")
-                }
+                let IC = "aaaaa-aa";
+                let ic = actor (IC) : Interface.Self;
+                let status = await ic.canister_status({
+                    canister_id = principal;
+                });
+                let currentControllers: [Principal] = status.settings.controllers;
+                let currentControllersBuff = Buffer.fromArray<Principal>(currentControllers);
+                currentControllersBuff.add(owner);
+                let updatedControllerArr: [Principal] = Buffer.toArray(currentControllersBuff);
+
+                let settings = {
+                    controllers = ?updatedControllerArr;
+                    memory_allocation = null;
+                    compute_allocation = null;
+                    freezing_threshold = null;
+                };
+
+                await ic.update_settings({
+                    canister_id = principal;
+                    settings = settings;
+                });
+                return #ok(true);
             };
             case (null) {
                 #err("Soodio canister not created yet")
@@ -156,5 +169,4 @@ shared(init_msg) actor class SoodioAdmin() = this {
             };
         };
     };
-
 };
