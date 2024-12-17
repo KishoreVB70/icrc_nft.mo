@@ -903,7 +903,6 @@ shared(_init_msg) actor class Soodio() = this {
     return icrc7().atomic_batch_transfers();
   };
 
-
   public query func icrc7_collection_metadata() : async [(Text, Value)] {
 
     let ledger_info = icrc7().collection_metadata();
