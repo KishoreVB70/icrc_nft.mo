@@ -24,17 +24,17 @@ import CertTree "mo:cert/CertTree";
 // Standards
 import ICRC7 "mo:icrc7-mo";
 import ICRC3 "mo:icrc3-mo";
-import {ahash} "types";
+import {ahash} "../types";
 
 // Default init args
-import ICRC7Default "./initial_state/icrc7";
-import ICRC3Default "./initial_state/icrc3";
+import ICRC7Default "../initial_state/icrc7";
+import ICRC3Default "../initial_state/icrc3";
 
 // UUID
 import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
 
-import Types "Types";
+import Types "../SoodioTypes";
 
   // _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Soodio() = this {

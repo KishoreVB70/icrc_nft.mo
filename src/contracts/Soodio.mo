@@ -34,7 +34,7 @@ import ICRC3Default "./initial_state/icrc3";
 import Source "mo:uuid/async/SourceV4";
 import UUID "mo:uuid/UUID";
 
-import Types "Types";
+import Types "SoodioTypes";
 
   // _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Soodio() = this {

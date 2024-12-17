@@ -4,8 +4,6 @@ import Text "mo:base/Text";
 import Nat32 "mo:base/Nat32";
 import Set "mo:map/Set";
 
-
-
 module {
     public type Account = ICRC7.Account;
 

@@ -1,7 +1,7 @@
 {
     "canisters": {
         "soodio": {
-            "main": "src/contracts/Hacky.mo",
+            "main": "src/contracts/Soodio.mo",
             "type": "motoko",
             "gzip": true
         },
