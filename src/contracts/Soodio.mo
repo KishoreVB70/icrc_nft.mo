@@ -62,22 +62,71 @@ shared(_init_msg) actor class Soodio() = this {
   public type CreateLibraryRequest = Types.CreateLibraryRequest;
   public type CreateUserRequest = Types.CreateUserRequest;
   public type UserProfile = Types.UserProfile;
+  public type BoolResult = Result.Result<Bool, Text>;
+  public type StringResult = Result.Result<Text, Text>;
+  public type NatResult = Result.Result<Nat, Text>;
+  public type PrincipalsResult  = Result.Result<[Principal], Text>;
 
   stable var init_msg = _init_msg; //preserves original initialization;
+  stable var owner: Principal = _init_msg.caller;
+  stable var authorizedPrincipals: [Principal] = [owner];
+  
+
+
+  public shared(msg) func add_authorized_principals(
+    principals: [Principal]
+  ): async BoolResult {
+    if(msg.caller != owner) return #err("Unauthorized");
+    let new_principals = Buffer.fromArray<Principal>(principals);
+    let existing_principals = Buffer.fromArray<Principal>(authorizedPrincipals);
+    existing_principals.append(new_principals);
+    authorizedPrincipals := Buffer.toArray(existing_principals);
+    return #ok(true);
+  };
+
+  public shared(msg) func revoke_authorization (
+    principal: Principal
+  ): async BoolResult {
+    if(msg.caller != owner) return #err("Unauthorized");
+    let updated_arr: [Principal] = Array.filter<Principal>(
+        authorizedPrincipals, func x = x!= principal
+    );
+    authorizedPrincipals := updated_arr;
+    return #ok(true);
+  };
+
+  public shared(msg) func get_auth(): async PrincipalsResult{
+    if(msg.caller != owner) return #err("Unauthorized");
+    return #ok(authorizedPrincipals);
+  };
+
+  private func is_authorized(caller: Principal): Bool {
+    for (principal in authorizedPrincipals.vals()) {
+        if (principal == caller) {
+            return true;
+        }
+    };
+    return false;
+  };
+
   // Stable variables
   stable var userslibraries = Map.new<Account, LibraryIDS>();
   stable var libraries = Map.new<LibraryID, Library>();
   stable var userids = Map.new<Account, Text>();
   stable var userprofiles = Map.new<Text, UserProfile>();
 
+  // Admin level functions
+
   // Create user
   // Access control: Contract owner
   public shared(msg) func create_user(
     account: Account,
     user_req: CreateUserRequest
-  ): async Result.Result<Text, Text> {
+  ): async StringResult {
     // Only the admin can create a user
-    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
+    if (is_authorized(msg.caller) != true) {
+        return #err("Unauthorized");
+    };
     let acc: ?Text = Map.get(userids, ahash, account);
     switch (acc) {
       case (?_val) {
@@ -101,63 +150,17 @@ shared(_init_msg) actor class Soodio() = this {
     // Map uuid to profile
     Map.set(userprofiles, thash, uuid, user);
     return #ok(uuid);
-  };
-
-  // Get users from IDs
-  public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
-    return get_users(user_ids);
-  };
-
-  // Get user from Account
-  public query func get_users_from_accounts(accounts: [Account]): async [UserProfile] {
-    let user_ids_vec = Vec.new<Text>();
-    for (account in accounts.vals()) {
-      let uid: ?Text = Map.get(userids, ahash, account);
-      switch uid {
-        case (?val) {
-          Vec.add(user_ids_vec, val);
-        };
-        case (null) {};
-      };
-    };
-    let user_ids = Vec.toArray(user_ids_vec);
-    return get_users(user_ids);
-  };
-
-  public query  func get_user_id(account: Account): async Result.Result<Text, Text> {
-    let user_id: ?Text = Map.get(userids, ahash, account);
-    switch (user_id) {
-      case (?val) {
-        return (#ok(val));
-      };
-      case (null) {
-        return #err("Non existent profile");
-      }
-    }
-  };
-
-  // Helper function for query functions
-  private func get_users(user_ids: [Text]): [UserProfile] {
-    let users = Vec.new<UserProfile>();
-    for (user_id in user_ids.vals()) {
-      let user: ?UserProfile = Map.get(userprofiles, thash, user_id);
-      switch user {
-        case (?val) {
-          Vec.add(users, val);
-        };
-        case (null) {};
-      };
-    };
-    return Vec.toArray(users);
-  };
+  };  
 
   // Create a library
   // Access control: Contract owner
   public shared(msg) func create_library(
     libreq: CreateLibraryRequest
-  ): async Result.Result<Text, Text> {
+  ): async StringResult {
     // Only the admin can create a library
-    if(msg.caller != icrc7().get_state().owner) return #err("Unauthorized admin");
+    if (is_authorized(msg.caller) != true) {
+        return #err("Unauthorized");
+    };
 
     // UUID
     let uuid = await generate_uuid_text();
@@ -195,31 +198,156 @@ shared(_init_msg) actor class Soodio() = this {
     return #ok(library.library_id);
   };
 
-  // Get Libraries
-  public query func get_libraries(library_ids: [LibraryID]): async [Library] {
-    return get_libraries_private(library_ids);
+  // Update the downloads of an NFT
+  // Access control: Contract owner
+  // Set to take a variable to allow batch updates in the future
+  public shared(msg) func update_downloads(
+    nft_id: Nat, downloads: Nat32
+  ): async BoolResult {
+    if (is_authorized(msg.caller) != true) {
+        return #err("Unauthorized");
+    };
+
+    // Token must exist
+    switch( icrc7().get_token_owner_canonical(nft_id) ){
+      case(#ok(_val)) {};
+      case (#err(_msg)) return #err("Invalid Tokenid");
+    };
+
+    let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([nft_id]);
+    let metadataOpt: ?[(Text, Value)] = metadatas[0];
+    var current_downloads:Nat = 0;
+    switch (metadataOpt) {
+      case (?metadata_array) {
+        for (entry in Array.vals(metadata_array)) {
+          let (key, value) = entry;  // Destructure the tuple
+            if (key == "downloads") {
+              switch (value) {
+                case (#Nat(downloads_val)) {
+                    current_downloads := downloads_val;
+                };
+                case (_) {}; 
+              };
+            };
+        };
+      };
+      case (_) {};
+    };
+
+    let nat32_current_downloads: Nat32 = Nat32.fromNat(current_downloads);
+    let updated_downloads: Nat32 = nat32_current_downloads + downloads;
+
+    let update_request: ICRC7.UpdateNFTRequest = 
+    [
+      {
+        token_id = nft_id;
+        created_at_time = null;
+        memo = null;
+        updates = [
+          {
+            name = "downloads";
+            mode = #Set(#Nat32(updated_downloads));
+          }
+        ];
+      }
+    ];
+
+    let result = icrc7().update_nfts<system>(icrc7().get_state().owner, update_request);
+    switch (result) {
+      case (#ok(_val)) return #ok(true);
+      case (#err(error)) return #err(error);
+    };
   };
 
-  // Helper function for query functions
-  private func get_libraries_private(library_ids: [LibraryID]): [Library] {
-    let libs = Vec.new<Library>();
-    for (lib_id in library_ids.vals()) {
-      let lib: ?Library = Map.get(libraries, thash, lib_id);
-      switch lib {
-        case (?val) {
-          Vec.add(libs, val);
+  // Create a token
+  // Access control: Contract owner
+  public shared(msg) func mint_nft(
+    token_owner: Account, nft_data: MintNFTRequest
+  ) : async NatResult {
+
+    if (is_authorized(msg.caller) != true) {
+        return #err("Unauthorized");
+    };
+
+    // Check nft owner is the owner of the library
+    let lib_quer: ?Library = Map.get(libraries, thash, nft_data.library_id);
+    switch lib_quer {
+      case(?val) {
+        if (val.owner != token_owner) {
+          return #err("Unauthorized library");
         };
-        case (null) {};
+      };
+      case(null) {
+        return #err("Invalid library");
       };
     };
-    return Vec.toArray(libs);
+
+    // Generate UUID
+    let uuid: Nat = await generate_uuid_nat();
+
+    // Generate metadata
+    let metadata : NFTInput = #Class([
+      { name = "name"; value = #Text(nft_data.name); immutable = true },
+      { name = "description"; value = #Text(nft_data.description); immutable = true },
+      { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
+      { name = "genre"; value = #Text(nft_data.genre); immutable = true },
+      { name = "creator_name"; value = #Text(nft_data.creator_name); immutable = true },
+      { name = "downloads"; value = #Nat32(0); immutable = false },
+      { name = "bpm"; value = #Nat32(nft_data.bpm); immutable = true },
+      { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
+      { name = "library_id"; value = #Text(nft_data.library_id); immutable = false },
+      { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
+      { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false },
+      { name = "audio_provider_spec"; value = #ValueMap(nft_data.audio_provider_spec); immutable = false }
+    ]);
+
+    let req: SetNFTItemRequest = {
+      token_id= uuid;
+      owner= ?token_owner;
+      metadata = metadata;
+      created_at_time = null;
+      memo = null;
+      override = true;
+    };
+
+    switch(icrc7().set_nfts<system>(icrc7().get_state().owner, [req], true)){
+      // The returned value is just the transaction id, not required
+      case(#ok(_val)) {
+        // Add NFT to the library
+        switch (lib_quer) {
+          case (?val) {
+            let buffer = Buffer.fromArray<Nat>(val.nft_ids);
+            buffer.add(uuid);
+
+            let updated_lib: Library = {
+              description = val.description;
+              library_id = val.library_id;
+              name = val.name;
+              nft_ids = Buffer.toArray(buffer);
+              creator_name = val.creator_name;
+              owner = val.owner;
+              thumbnail = val.thumbnail;
+            };
+
+            Map.set(libraries, thash, nft_data.library_id, updated_lib);
+          };
+          case _ {};
+        };
+        return #ok(uuid);
+      };
+      case(#err(err)) {
+        return #err(err);
+      };
+    };
   };
+
+  // Token owner functions
 
   // Change library
   // Access control: Token owner
   public shared(msg) func change_library(
     token_owner: Account, target_library_id: LibraryID, nft_id: Nat
-  ): async Result.Result<Bool,Text> {
+  ): async BoolResult {
     // Checks
 
     // 1) Caller must be the owner of the token
@@ -336,173 +464,10 @@ shared(_init_msg) actor class Soodio() = this {
       }
     ];
 
-    let result = icrc7().update_nfts<system>(msg.caller, update_request);
+    let result = icrc7().update_nfts<system>(icrc7().get_state().owner, update_request);
     switch (result) {
       case (#ok(_val)) return #ok(true);
       case (#err(error)) return #err(error);
-    };
-  };
-
-  // Get list of library ids of users
-  public query func get_user_library_ids(user: Account): async [LibraryID] {
-    return get_user_library_ids_private(user);
-  };
-
-  // Helper function for query functions
-  private func get_user_library_ids_private(user: Account): [LibraryID] {
-    let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
-    switch(result) {
-      case(?val) {
-        let array = Set.toArray(val);
-        return array;
-      };
-      case null {
-        return [];
-      };
-    };
-  };
-
-  // Get list of libraries of users
-  public query func get_user_libraries(user: Account): async [Library] {
-    let ids: [LibraryID] = get_user_library_ids_private(user);
-    let libraries = get_libraries_private(ids);
-    return libraries;
-  };
-
-  // Update the downloads of an NFT
-  // Access control: Contract owner
-  // Set to take a variable to allow batch updates in the future
-  public shared(msg) func update_downloads(
-    nft_id: Nat, downloads: Nat32
-  ): async Result.Result<Bool, Text> {
-    if (msg.caller != icrc7().get_state().owner) return #err("Unauthorized");
-
-    // Token must exist
-    switch( icrc7().get_token_owner_canonical(nft_id) ){
-      case(#ok(_val)) {};
-      case (#err(_msg)) return #err("Invalid Tokenid");
-    };
-
-    let metadatas: [?[(Text, Value)]] = icrc7().token_metadata([nft_id]);
-    let metadataOpt: ?[(Text, Value)] = metadatas[0];
-    var current_downloads:Nat = 0;
-    switch (metadataOpt) {
-      case (?metadata_array) {
-        for (entry in Array.vals(metadata_array)) {
-          let (key, value) = entry;  // Destructure the tuple
-            if (key == "downloads") {
-              switch (value) {
-                case (#Nat(downloads_val)) {
-                    current_downloads := downloads_val;
-                };
-                case (_) {}; 
-              };
-            };
-        };
-      };
-      case (_) {};
-    };
-
-    let nat32_current_downloads: Nat32 = Nat32.fromNat(current_downloads);
-    let updated_downloads: Nat32 = nat32_current_downloads + downloads;
-
-    let update_request: ICRC7.UpdateNFTRequest = 
-    [
-      {
-        token_id = nft_id;
-        created_at_time = null;
-        memo = null;
-        updates = [
-          {
-            name = "downloads";
-            mode = #Set(#Nat32(updated_downloads));
-          }
-        ];
-      }
-    ];
-
-    let result = icrc7().update_nfts<system>(msg.caller, update_request);
-    switch (result) {
-      case (#ok(_val)) return #ok(true);
-      case (#err(error)) return #err(error);
-    };
-  };
-
-  // Create a token
-  // Access control: Contract owner
-  public shared(msg) func mint_nft(
-    token_owner: Account, nft_data: MintNFTRequest
-  ) : async Result.Result<Nat, Text> {
-
-    // Check nft owner is the owner of the library
-    let lib_quer: ?Library = Map.get(libraries, thash, nft_data.library_id);
-    switch lib_quer {
-      case(?val) {
-        if (val.owner != token_owner) {
-          return #err("Unauthorized library");
-        };
-      };
-      case(null) {
-        return #err("Invalid library");
-      };
-    };
-
-    // Generate UUID
-    let uuid: Nat = await generate_uuid_nat();
-
-    // Generate metadata
-    let metadata : NFTInput = #Class([
-      { name = "name"; value = #Text(nft_data.name); immutable = true },
-      { name = "description"; value = #Text(nft_data.description); immutable = true },
-      { name = "music_key"; value = #Text(nft_data.music_key); immutable = true },
-      { name = "genre"; value = #Text(nft_data.genre); immutable = true },
-      { name = "creator_name"; value = #Text(nft_data.creator_name); immutable = true },
-      { name = "downloads"; value = #Nat32(0); immutable = false },
-      { name = "bpm"; value = #Nat32(nft_data.bpm); immutable = true },
-      { name = "duration"; value = #Nat32(nft_data.duration); immutable = true },
-      { name = "library_id"; value = #Text(nft_data.library_id); immutable = false },
-      { name = "audio_identifier"; value = #Text(nft_data.audio_identifier); immutable = false },
-      { name = "audio_provider"; value = #Text(nft_data.audio_provider); immutable = false },
-      { name = "audio_provider_spec"; value = #ValueMap(nft_data.audio_provider_spec); immutable = false }
-    ]);
-
-    let req: SetNFTItemRequest = {
-      token_id= uuid;
-      owner= ?token_owner;
-      metadata = metadata;
-      created_at_time = null;
-      memo = null;
-      override = true;
-    };
-
-    switch(icrc7().set_nfts<system>(msg.caller, [req], true)){
-      // The returned value is just the transaction id, not required
-      case(#ok(_val)) {
-        // Add NFT to the library
-        switch (lib_quer) {
-          case (?val) {
-            let buffer = Buffer.fromArray<Nat>(val.nft_ids);
-            buffer.add(uuid);
-
-            let updated_lib: Library = {
-              description = val.description;
-              library_id = val.library_id;
-              name = val.name;
-              nft_ids = Buffer.toArray(buffer);
-              creator_name = val.creator_name;
-              owner = val.owner;
-              thumbnail = val.thumbnail;
-            };
-
-            Map.set(libraries, thash, nft_data.library_id, updated_lib);
-          };
-          case _ {};
-        };
-        return #ok(uuid);
-      };
-      case(#err(err)) {
-        return #err(err);
-      };
     };
   };
 
@@ -510,7 +475,19 @@ shared(_init_msg) actor class Soodio() = this {
   // Access control: Token owner
   public shared(msg) func burn_nft(
     token: Nat
-  ) : async Result.Result<Bool, Text> {
+  ) : async BoolResult {
+
+    // Owner check
+    switch( icrc7().get_token_owner_canonical(token) ){
+      case(#ok(acc)) {
+        let principal = acc.owner;
+        if (principal != msg.caller) {
+          return #err("Unauthorized caller");
+        };
+      };
+      case _ return #err("Invalid Tokenid");
+    };
+
     let burnrequest = {
       tokens = [token];
       memo = null;
@@ -578,6 +555,104 @@ shared(_init_msg) actor class Soodio() = this {
     };
   };
 
+  // Query functions
+
+  // Get users from IDs
+  public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
+    return get_users(user_ids);
+  };
+
+  // Get user from Account
+  public query func get_users_from_accounts(
+    accounts: [Account]
+  ): async [UserProfile] {
+    let user_ids_vec = Vec.new<Text>();
+    for (account in accounts.vals()) {
+      let uid: ?Text = Map.get(userids, ahash, account);
+      switch uid {
+        case (?val) {
+          Vec.add(user_ids_vec, val);
+        };
+        case (null) {};
+      };
+    };
+    let user_ids = Vec.toArray(user_ids_vec);
+    return get_users(user_ids);
+  };
+
+  public query  func get_user_id(account: Account): async StringResult {
+    let user_id: ?Text = Map.get(userids, ahash, account);
+    switch (user_id) {
+      case (?val) {
+        return (#ok(val));
+      };
+      case (null) {
+        return #err("Non existent profile");
+      }
+    }
+  };
+
+  // Helper function for query functions
+  private func get_users(user_ids: [Text]): [UserProfile] {
+    let users = Vec.new<UserProfile>();
+    for (user_id in user_ids.vals()) {
+      let user: ?UserProfile = Map.get(userprofiles, thash, user_id);
+      switch user {
+        case (?val) {
+          Vec.add(users, val);
+        };
+        case (null) {};
+      };
+    };
+    return Vec.toArray(users);
+  };
+
+  // Get Libraries
+  public query func get_libraries(library_ids: [LibraryID]): async [Library] {
+    return get_libraries_private(library_ids);
+  };
+
+  // Helper function for query functions
+  private func get_libraries_private(library_ids: [LibraryID]): [Library] {
+    let libs = Vec.new<Library>();
+    for (lib_id in library_ids.vals()) {
+      let lib: ?Library = Map.get(libraries, thash, lib_id);
+      switch lib {
+        case (?val) {
+          Vec.add(libs, val);
+        };
+        case (null) {};
+      };
+    };
+    return Vec.toArray(libs);
+  };
+
+  // Get list of library ids of users
+  public query func get_user_library_ids(user: Account): async [LibraryID] {
+    return get_user_library_ids_private(user);
+  };
+
+  // Helper function for query functions
+  private func get_user_library_ids_private(user: Account): [LibraryID] {
+    let result: ?LibraryIDS = Map.get(userslibraries, ahash, user);
+    switch(result) {
+      case(?val) {
+        let array = Set.toArray(val);
+        return array;
+      };
+      case null {
+        return [];
+      };
+    };
+  };
+
+  // Get list of libraries of users
+  public query func get_user_libraries(user: Account): async [Library] {
+    let ids: [LibraryID] = get_user_library_ids_private(user);
+    let libraries = get_libraries_private(ids);
+    return libraries;
+  };
+
   public query func get_user_nft_metadatas(user: Account): async [?[(Text, Value)]] {
     // 1) Get all the token ids of the user
     let token_ids = icrc7().get_tokens_of_paginated(user, null, null);
@@ -585,6 +660,8 @@ shared(_init_msg) actor class Soodio() = this {
     return icrc7().token_metadata(token_ids);
   };
   
+  // Utility functions
+
   // Function to generate unique id
   private func generate_uuid_nat(): async Nat {
     let g = Source.Source();
@@ -628,7 +705,6 @@ shared(_init_msg) actor class Soodio() = this {
     return icrc7_state_current;
   };
 
-  // Unused - Why?
   private func get_icrc3_state() : ICRC3.CurrentState {
     return icrc3_state_current;
   };
@@ -914,4 +990,8 @@ shared(_init_msg) actor class Soodio() = this {
   public query func get_tip() : async ICRC3.Tip {
     return icrc3().get_tip();
   };
+
+  public query func get_owner(): async Principal {
+    return icrc7().get_state().owner;
+  }
 };
