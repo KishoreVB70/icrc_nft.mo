@@ -953,12 +953,12 @@ shared(_init_msg) actor class Soodio() = this {
       {name = "ICRC-37"; url = "https://github.com/dfinity/ICRC/ICRCs/ICRC-37"}];
   };
 
-  // System capabililties not provided to the functions, Why?
-  // Warn: Potential error and debugging point
+
+  // Transfer is disabled
+  // Return null to prohibit token transfer - Soul Bound Token
   public shared(msg) func icrc7_transfer<system>(
     args: [TransferArgs]
   ) : async [?TransferResult] {
-    // Return null to prohibit token transfer - Soul Bound Token
     return [null];
   };
 
