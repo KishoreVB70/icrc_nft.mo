@@ -70,8 +70,6 @@ shared(_init_msg) actor class Soodio() = this {
   stable var init_msg = _init_msg; //preserves original initialization;
   stable var owner: Principal = _init_msg.caller;
   stable var authorizedPrincipals: [Principal] = [owner];
-  
-
 
   public shared(msg) func add_authorized_principals(
     principals: [Principal]
@@ -95,7 +93,7 @@ shared(_init_msg) actor class Soodio() = this {
     return #ok(true);
   };
 
-  public shared(msg) func get_auth(): async PrincipalsResult{
+  public shared(msg) func get_authorized_principals(): async PrincipalsResult{
     if(msg.caller != owner) return #err("Unauthorized");
     return #ok(authorizedPrincipals);
   };
