@@ -245,7 +245,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'create_library' : IDL.Func([CreateLibraryRequest], [StringResult], []),
     'create_user' : IDL.Func([Account, CreateUserRequest], [StringResult], []),
-    'get_auth' : IDL.Func([], [PrincipalsResult], []),
+    'get_authorized_principals' : IDL.Func([], [PrincipalsResult], []),
     'get_libraries' : IDL.Func(
         [IDL.Vec(LibraryID__1)],
         [IDL.Vec(Library)],
@@ -349,6 +349,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'icrc7_tx_window' : IDL.Func([], [IDL.Opt(IDL.Nat)], ['query']),
+    'is_library_unique' : IDL.Func([Account, IDL.Text], [IDL.Bool], ['query']),
+    'is_username_unique' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'mint_nft' : IDL.Func([Account, MintNFTRequest], [NatResult], []),
     'revoke_authorization' : IDL.Func([IDL.Principal], [BoolResult], []),
     'update_downloads' : IDL.Func([IDL.Nat, IDL.Nat32], [BoolResult], []),

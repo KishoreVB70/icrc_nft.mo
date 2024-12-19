@@ -151,7 +151,7 @@ export interface Soodio {
   'change_library' : ActorMethod<[Account, LibraryID__1, bigint], BoolResult>,
   'create_library' : ActorMethod<[CreateLibraryRequest], StringResult>,
   'create_user' : ActorMethod<[Account, CreateUserRequest], StringResult>,
-  'get_auth' : ActorMethod<[], PrincipalsResult>,
+  'get_authorized_principals' : ActorMethod<[], PrincipalsResult>,
   'get_libraries' : ActorMethod<[Array<LibraryID__1>], Array<Library>>,
   'get_owner' : ActorMethod<[], Principal>,
   'get_tip' : ActorMethod<[], Tip>,
@@ -202,6 +202,8 @@ export interface Soodio {
     Array<[] | [TransferResult]>
   >,
   'icrc7_tx_window' : ActorMethod<[], [] | [bigint]>,
+  'is_library_unique' : ActorMethod<[Account, string], boolean>,
+  'is_username_unique' : ActorMethod<[string], boolean>,
   'mint_nft' : ActorMethod<[Account, MintNFTRequest], NatResult>,
   'revoke_authorization' : ActorMethod<[Principal], BoolResult>,
   'update_downloads' : ActorMethod<[bigint, number], BoolResult>,
