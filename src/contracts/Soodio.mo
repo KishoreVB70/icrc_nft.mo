@@ -32,8 +32,6 @@ import ICRC3Default "./initial_state/icrc3";
 
 // UUID
 import Source "mo:uuid/async/SourceV4";
-import UUID "mo:uuid/UUID";
-
 import Types "SoodioTypes";
 
   // _init_msg is used to get the principal of the deployer
@@ -164,12 +162,14 @@ shared(_init_msg) actor class Soodio() = this {
         return #err("Unauthorized");
     };
 
-    // UUID
-    let uuid = await generate_uuid_text();
+    // Library id (name) must be unique
+    if (is_library_unique_private(libreq.owner, libreq.name) != true) {
+      return #err("Non unqiue library name");
+    };
 
     let library: Library = {
       description = libreq.description;
-      library_id = uuid;
+      library_id = libreq.name;
       name = libreq.name;
       creator_name = libreq.creator_name;
       owner = libreq.owner;
@@ -178,7 +178,7 @@ shared(_init_msg) actor class Soodio() = this {
     };
   
     // 1) Create the library
-    Map.set(libraries, thash, uuid , library);
+    Map.set(libraries, thash, libreq.name , library);
 
     // 2) Update the user libraries
     let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
@@ -559,7 +559,7 @@ shared(_init_msg) actor class Soodio() = this {
 
   // Query functions
 
-    public query func is_username_unique(
+  public query func is_username_unique(
     name: Text
   ): async Bool {
     return is_username_unique_private(name);
@@ -581,7 +581,6 @@ shared(_init_msg) actor class Soodio() = this {
       };
     }
   };
-
 
   // Get users from IDs
   public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
@@ -631,6 +630,35 @@ shared(_init_msg) actor class Soodio() = this {
       };
     };
     return Vec.toArray(users);
+  };
+
+  // Library related functions
+
+  public query func is_library_unique(user: Account, name: Text): async Bool {
+    return is_library_unique_private(user, name);
+  };
+
+  private func is_library_unique_private(user: Account, name: Text): Bool {
+    let user_libraries_opt: ?LibraryIDS = Map.get(userslibraries, ahash, user);
+    switch(user_libraries_opt) {
+      case(?libs) {
+        let contains = Set.contains(libs, thash, name);
+        switch (contains) {
+        case (?true) {
+          return false;
+        };
+        case (?false) {
+          return true;
+        };
+        case (null) {
+          return false;
+        };
+      }
+      };
+      case null {
+        return false;
+      };
+    };
   };
 
   // Get Libraries
@@ -697,11 +725,6 @@ shared(_init_msg) actor class Soodio() = this {
       result := result * 256 + Nat8.toNat(byte);
     };
     result
-  };
-
-  private func generate_uuid_text(): async Text {
-    let g = Source.Source();
-    UUID.toText(await g.new());
   };
 
   // Initializing Migration state for migrating to future versions
