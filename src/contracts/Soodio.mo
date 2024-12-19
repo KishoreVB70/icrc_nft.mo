@@ -123,8 +123,14 @@ shared(_init_msg) actor class Soodio() = this {
   ): async StringResult {
     // Only the admin can create a user
     if (is_authorized(msg.caller) != true) {
-        return #err("Unauthorized");
+      return #err("Unauthorized");
     };
+
+    // Name has to be unique
+    if (is_username_unique_private(user_req.name) != true) {
+      return #err("non unique username");
+    };
+
     let acc: ?Text = Map.get(userids, ahash, account);
     switch (acc) {
       case (?_val) {
@@ -132,8 +138,6 @@ shared(_init_msg) actor class Soodio() = this {
       };
       case null{};
     };
-
-    let uuid: Text = await generate_uuid_text();
 
     let user: UserProfile = {
       name= user_req.name;
@@ -143,11 +147,11 @@ shared(_init_msg) actor class Soodio() = this {
     };
 
     // Map Account to uuid
-    Map.set(userids, ahash, account, uuid);
+    Map.set(userids, ahash, account, user_req.name);
 
     // Map uuid to profile
-    Map.set(userprofiles, thash, uuid, user);
-    return #ok(uuid);
+    Map.set(userprofiles, thash, user_req.name, user);
+    return #ok(user_req.name);
   };  
 
   // Create a library
@@ -554,6 +558,30 @@ shared(_init_msg) actor class Soodio() = this {
   };
 
   // Query functions
+
+    public query func is_username_unique(
+    name: Text
+  ): async Bool {
+    return is_username_unique_private(name);
+  };
+
+  private func is_username_unique_private(
+    name: Text
+  ): Bool {
+    let contains: ?Bool = Map.contains(userprofiles, thash, name);
+    switch (contains) {
+      case (?true) {
+        return false;
+      };
+      case (?false) {
+        return true;
+      };
+      case (null) {
+        return false;
+      };
+    }
+  };
+
 
   // Get users from IDs
   public query func get_users_from_ids(user_ids: [Text]): async [UserProfile] {
