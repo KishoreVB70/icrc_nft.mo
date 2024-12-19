@@ -39,7 +39,6 @@ module {
         name: Text;
         description: Text;
         thumbnail: Text;
-        creator_name: Text;
         owner: Account;
     };
 

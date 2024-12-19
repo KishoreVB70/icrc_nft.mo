@@ -34,6 +34,8 @@ import ICRC3Default "./initial_state/icrc3";
 import Source "mo:uuid/async/SourceV4";
 import Types "SoodioTypes";
 
+import Debug "mo:base/Debug";
+
   // _init_msg is used to get the principal of the deployer
 shared(_init_msg) actor class Soodio() = this {
   type Environment = ICRC7.Environment;
@@ -66,6 +68,8 @@ shared(_init_msg) actor class Soodio() = this {
   public type PrincipalsResult  = Result.Result<[Principal], Text>;
 
   stable var init_msg = _init_msg; //preserves original initialization;
+
+  // Administration functions
   stable var owner: Principal = _init_msg.caller;
   stable var authorizedPrincipals: [Principal] = [owner];
 
@@ -85,7 +89,7 @@ shared(_init_msg) actor class Soodio() = this {
   ): async BoolResult {
     if(msg.caller != owner) return #err("Unauthorized");
     let updated_arr: [Principal] = Array.filter<Principal>(
-        authorizedPrincipals, func x = x!= principal
+      authorizedPrincipals, func x = x!= principal
     );
     authorizedPrincipals := updated_arr;
     return #ok(true);
@@ -111,7 +115,7 @@ shared(_init_msg) actor class Soodio() = this {
   stable var userids = Map.new<Account, Text>();
   stable var userprofiles = Map.new<Text, UserProfile>();
 
-  // Admin level functions
+  // Admin access functions
 
   // Create user
   // Access control: Contract owner
@@ -167,11 +171,26 @@ shared(_init_msg) actor class Soodio() = this {
       return #err("Non unqiue library name");
     };
 
+    // Get the user name
+    var creatorName: Text = "";
+    let creatorNameOpt: ?Text = Map.get(userids, ahash, libreq.owner);
+    switch (creatorNameOpt) {
+      case (?name) {
+        creatorName := name;
+      };
+      case (null) {
+        return #err("User doesn't have a profile");
+      };
+    };
+
+    let libraryName: Text = creatorName # "-" # libreq.name;
+
+
     let library: Library = {
       description = libreq.description;
-      library_id = libreq.name;
-      name = libreq.name;
-      creator_name = libreq.creator_name;
+      library_id = libraryName;
+      name = libraryName;
+      creator_name = creatorName;
       owner = libreq.owner;
       thumbnail = libreq.thumbnail;
       nft_ids = [];
@@ -576,8 +595,9 @@ shared(_init_msg) actor class Soodio() = this {
       case (?false) {
         return true;
       };
+      // null indicates map has not been initialized yet
       case (null) {
-        return false;
+        return true;
       };
     }
   };
@@ -651,12 +671,14 @@ shared(_init_msg) actor class Soodio() = this {
           return true;
         };
         case (null) {
-          return false;
+          // set has not been initialized
+          return true;
         };
       }
       };
       case null {
-        return false;
+        // user libraries not initialized
+        return true;
       };
     };
   };
