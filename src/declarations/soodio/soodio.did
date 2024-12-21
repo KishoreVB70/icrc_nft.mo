@@ -233,7 +233,6 @@ type Library =
  record {
    creator_name: text;
    description: text;
-   library_id: LibraryID;
    name: text;
    nft_ids: vec nat;
    owner: Account__2;
@@ -280,7 +279,6 @@ type CreateUserRequest =
  };
 type CreateLibraryRequest = 
  record {
-   creator_name: text;
    description: text;
    name: text;
    owner: Account__2;

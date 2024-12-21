@@ -185,7 +185,6 @@ shared(_init_msg) actor class Soodio() = this {
 
     let libraryName: Text = creatorName # "-" # libreq.name;
 
-
     let library: Library = {
       description = libreq.description;
       name = libraryName;
@@ -686,8 +685,8 @@ shared(_init_msg) actor class Soodio() = this {
   // Helper function for query functions
   private func get_libraries_private(library_ids: [LibraryID]): [Library] {
     let libs = Vec.new<Library>();
-    for (lib_id in library_ids.vals()) {
-      let lib: ?Library = Map.get(libraries, thash, lib_id);
+    for (name in library_ids.vals()) {
+      let lib: ?Library = Map.get(libraries, thash, name);
       switch lib {
         case (?val) {
           Vec.add(libs, val);

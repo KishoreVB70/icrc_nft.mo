@@ -15,7 +15,6 @@ export const idlFactory = ({ IDL }) => {
     'subaccount' : IDL.Opt(Subaccount),
   });
   const CreateLibraryRequest = IDL.Record({
-    'creator_name' : IDL.Text,
     'thumbnail' : IDL.Text,
     'owner' : Account__2,
     'name' : IDL.Text,
@@ -31,7 +30,6 @@ export const idlFactory = ({ IDL }) => {
     'ok' : IDL.Vec(IDL.Principal),
     'err' : IDL.Text,
   });
-  const LibraryID = IDL.Text;
   const Library = IDL.Record({
     'creator_name' : IDL.Text,
     'thumbnail' : IDL.Text,
@@ -39,7 +37,6 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'description' : IDL.Text,
     'nft_ids' : IDL.Vec(IDL.Nat),
-    'library_id' : LibraryID,
   });
   const Tip = IDL.Record({
     'last_block_index' : IDL.Vec(IDL.Nat8),
@@ -217,6 +214,7 @@ export const idlFactory = ({ IDL }) => {
     'ValueMap' : IDL.Vec(IDL.Tuple(CandyShared, CandyShared)),
     'Class' : IDL.Vec(PropertyShared),
   });
+  const LibraryID = IDL.Text;
   const MintNFTRequest = IDL.Record({
     'bpm' : IDL.Nat32,
     'duration' : IDL.Nat32,

@@ -49,7 +49,6 @@ export type CandyShared = { 'Int' : bigint } |
   { 'ValueMap' : Array<[CandyShared, CandyShared]> } |
   { 'Class' : Array<PropertyShared> };
 export interface CreateLibraryRequest {
-  'creator_name' : string,
   'thumbnail' : string,
   'owner' : Account__2,
   'name' : string,
@@ -92,7 +91,6 @@ export interface Library {
   'name' : string,
   'description' : string,
   'nft_ids' : Array<bigint>,
-  'library_id' : LibraryID,
 }
 export type LibraryID = string;
 export type LibraryID__1 = string;
