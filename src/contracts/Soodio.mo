@@ -171,6 +171,7 @@ shared(_init_msg) actor class Soodio() = this {
       return #err("Non unqiue library name");
     };
 
+
     // Get the user name
     var creatorName: Text = "";
     let creatorNameOpt: ?Text = Map.get(userids, ahash, libreq.owner);
@@ -183,7 +184,7 @@ shared(_init_msg) actor class Soodio() = this {
       };
     };
 
-    let libraryName: Text = creatorName # "-" # libreq.name;
+    let libraryName: Text = creatorName # "-" # Text.toLowercase(libreq.name);
 
     let library: Library = {
       description = libreq.description;
@@ -194,10 +195,10 @@ shared(_init_msg) actor class Soodio() = this {
       nft_ids = [];
     };
   
-    // 1) Create the library
+    // Create the library
     Map.set(libraries, thash, libraryName, library);
 
-    // 2) Update the user libraries
+    // Update the user libraries
     let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
 
     switch userlibs {
@@ -653,22 +654,36 @@ shared(_init_msg) actor class Soodio() = this {
   };
 
   private func is_library_unique_private(user: Account, name: Text): Bool {
+    // Get the user name
+    var creatorName: Text = "";
+    let creatorNameOpt: ?Text = Map.get(userids, ahash, user);
+    switch (creatorNameOpt) {
+      case (?name) {
+        creatorName := name;
+      };
+      case (null) {
+        // Non existent profile
+        return false;
+      };
+    };
+
+    let libraryName: Text = creatorName # "-" # Text.toLowercase(name);
     let user_libraries_opt: ?LibraryIDS = Map.get(userslibraries, ahash, user);
     switch(user_libraries_opt) {
       case(?libs) {
-        let contains = Set.contains(libs, thash, name);
+        let contains = Set.contains(libs, thash, libraryName);
         switch (contains) {
-        case (?true) {
-          return false;
-        };
-        case (?false) {
-          return true;
-        };
-        case (null) {
-          // set has not been initialized
-          return true;
-        };
-      }
+          case (?true) {
+            return false;
+          };
+          case (?false) {
+            return true;
+          };
+          case (null) {
+            // set has not been initialized
+            return true;
+          };
+        }
       };
       case null {
         // user libraries not initialized
