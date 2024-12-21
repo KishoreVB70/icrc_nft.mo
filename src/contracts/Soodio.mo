@@ -128,8 +128,10 @@ shared(_init_msg) actor class Soodio() = this {
       return #err("Unauthorized");
     };
 
+    let userName = Text.toLowercase(user_req.name);
+
     // Name has to be unique
-    if (is_username_unique_private(user_req.name) != true) {
+    if (is_username_unique_private(userName) != true) {
       return #err("non unique username");
     };
 
@@ -142,18 +144,18 @@ shared(_init_msg) actor class Soodio() = this {
     };
 
     let user: UserProfile = {
-      name= user_req.name;
+      name= userName;
       email= user_req.email;
       image= user_req.image;
       account= account;
     };
 
     // Map Account to uuid
-    Map.set(userids, ahash, account, user_req.name);
+    Map.set(userids, ahash, account, userName);
 
     // Map uuid to profile
-    Map.set(userprofiles, thash, user_req.name, user);
-    return #ok(user_req.name);
+    Map.set(userprofiles, thash, userName, user);
+    return #ok(userName);
   };  
 
   // Create a library
@@ -582,7 +584,8 @@ shared(_init_msg) actor class Soodio() = this {
   private func is_username_unique_private(
     name: Text
   ): Bool {
-    let contains: ?Bool = Map.contains(userprofiles, thash, name);
+    let userName = Text.toLowercase(name);
+    let contains: ?Bool = Map.contains(userprofiles, thash, userName);
     switch (contains) {
       case (?true) {
         return false;
@@ -647,7 +650,7 @@ shared(_init_msg) actor class Soodio() = this {
     return Vec.toArray(users);
   };
 
-  // Library related functions
+  // Library related query functions
 
   public query func is_library_unique(user: Account, name: Text): async Bool {
     return is_library_unique_private(user, name);
