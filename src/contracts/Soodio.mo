@@ -195,7 +195,7 @@ shared(_init_msg) actor class Soodio() = this {
     };
   
     // 1) Create the library
-    Map.set(libraries, thash, libreq.name , library);
+    Map.set(libraries, thash, libraryName, library);
 
     // 2) Update the user libraries
     let userlibs: ?LibraryIDS = Map.get(userslibraries, ahash, library.owner);
