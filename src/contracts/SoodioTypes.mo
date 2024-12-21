@@ -26,7 +26,6 @@ module {
     };
 
     public type Library = {
-        library_id: LibraryID;
         name: Text;
         description: Text;
         thumbnail: Text;

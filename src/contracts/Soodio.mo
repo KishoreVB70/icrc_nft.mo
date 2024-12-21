@@ -179,7 +179,7 @@ shared(_init_msg) actor class Soodio() = this {
         creatorName := name;
       };
       case (null) {
-        return #err("User doesn't have a profile");
+        return #err("Non existent profile");
       };
     };
 
@@ -188,7 +188,6 @@ shared(_init_msg) actor class Soodio() = this {
 
     let library: Library = {
       description = libreq.description;
-      library_id = libraryName;
       name = libraryName;
       creator_name = creatorName;
       owner = libreq.owner;
@@ -205,18 +204,18 @@ shared(_init_msg) actor class Soodio() = this {
     switch userlibs {
       case (?val) {
         // User already has libraries, hence add the new library to user account
-        let _result: Bool = Set.put(val, thash, library.library_id);
+        let _result: Bool = Set.put(val, thash, library.name);
         let _result1 = Map.put(userslibraries, ahash, library.owner, val);
       };
       case (null) {
         // First library of the user, hence add to the mapping
         let newSet = Set.new<LibraryID>();
-        let _result: Bool = Set.put(newSet, thash, library.library_id);
+        let _result: Bool = Set.put(newSet, thash, library.name);
         let _result1 = Map.put(userslibraries, ahash, library.owner, newSet);
       };
     };
 
-    return #ok(library.library_id);
+    return #ok(library.name);
   };
 
   // Update the downloads of an NFT
@@ -342,7 +341,6 @@ shared(_init_msg) actor class Soodio() = this {
 
             let updated_lib: Library = {
               description = val.description;
-              library_id = val.library_id;
               name = val.name;
               nft_ids = Buffer.toArray(buffer);
               creator_name = val.creator_name;
@@ -429,7 +427,6 @@ shared(_init_msg) actor class Soodio() = this {
         let arr: [Nat] = Array.filter<Nat>(val.nft_ids, func x = x!= nft_id);
 
         let updated_lib: Library = {
-          library_id = val.library_id;
           name = val.name;
           description = val.description;
           owner = val.owner;
@@ -455,7 +452,6 @@ shared(_init_msg) actor class Soodio() = this {
 
         let updated_lib: Library = {
           description = val.description;
-          library_id = val.library_id;
           name = val.name;
           nft_ids = Buffer.toArray(buffer);
           creator_name = val.creator_name;
@@ -552,7 +548,6 @@ shared(_init_msg) actor class Soodio() = this {
                   case (?lib) {
                     let arr: [Nat] = Array.filter<Nat>(lib.nft_ids, func x = x!= nft_id);
                     let updated_lib: Library = {
-                      library_id = lib.library_id;
                       name = lib.name;
                       description = lib.description;
                       owner = lib.owner;
